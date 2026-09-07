@@ -1,34 +1,95 @@
-[
-  { "id": "soczewica-czerwona", "name": "Soczewica czerwona", "kcalPer100g": 116, "unit": "g", "category": "strączkowe" },
-  { "id": "soczewica-zielona", "name": "Soczewica zielona", "kcalPer100g": 116, "unit": "g", "category": "strączkowe" },
-  { "id": "owsianka", "name": "Płatki owsiane", "kcalPer100g": 368, "unit": "g", "category": "zboża" },
-  { "id": "jablko", "name": "Jabłko", "kcalPer100g": 52, "unit": "g", "category": "owoce" },
-  { "id": "marchewka", "name": "Marchewka", "kcalPer100g": 41, "unit": "g", "category": "warzywa" },
-  { "id": "cebula", "name": "Cebula", "kcalPer100g": 40, "unit": "g", "category": "warzywa" },
-  { "id": "czosnek", "name": "Czosnek", "kcalPer100g": 149, "unit": "g", "category": "warzywa" },
-  { "id": "pomidor-puszka", "name": "Pomidory z puszki", "kcalPer100g": 24, "unit": "g", "category": "warzywa" },
-  { "id": "bulion-warzywny", "name": "Bulion warzywny", "kcalPer100g": 5, "unit": "ml", "category": "inne" },
-  { "id": "oliwa", "name": "Oliwa z oliwek", "kcalPer100g": 884, "unit": "ml", "category": "tłuszcze" },
-  { "id": "maslo", "name": "Masło", "kcalPer100g": 717, "unit": "g", "category": "tłuszcze" },
-  { "id": "jajko", "name": "Jajko", "kcalPer100g": 155, "unit": "szt.", "category": "nabiał" },
-  { "id": "mleko", "name": "Mleko", "kcalPer100g": 61, "unit": "ml", "category": "nabiał" },
-  { "id": "ser-zolty", "name": "Ser żółty", "kcalPer100g": 402, "unit": "g", "category": "nabiał" },
-  { "id": "jogurt-naturalny", "name": "Jogurt naturalny", "kcalPer100g": 59, "unit": "g", "category": "nabiał" },
-  { "id": "ryz", "name": "Ryż", "kcalPer100g": 365, "unit": "g", "category": "zboża" },
-  { "id": "makaron", "name": "Makaron", "kcalPer100g": 371, "unit": "g", "category": "zboża" },
-  { "id": "kurczak-piersi", "name": "Pierś z kurczaka", "kcalPer100g": 165, "unit": "g", "category": "mięso" },
-  { "id": "ziemniaki", "name": "Ziemniaki", "kcalPer100g": 77, "unit": "g", "category": "warzywa" },
-  { "id": "szpinak", "name": "Szpinak", "kcalPer100g": 23, "unit": "g", "category": "warzywa" },
-  { "id": "batat", "name": "Batat", "kcalPer100g": 86, "unit": "g", "category": "warzywa" },
-  { "id": "kokos-mleko", "name": "Mleko kokosowe", "kcalPer100g": 230, "unit": "ml", "category": "inne" },
-  { "id": "cytryna", "name": "Cytryna", "kcalPer100g": 29, "unit": "szt.", "category": "owoce" },
-  { "id": "pietruszka-natka", "name": "Natka pietruszki", "kcalPer100g": 36, "unit": "g", "category": "przyprawy" },
-  { "id": "kumin", "name": "Kumin (kminek rzymski)", "kcalPer100g": 375, "unit": "g", "category": "przyprawy" },
-  { "id": "kurkuma", "name": "Kurkuma", "kcalPer100g": 354, "unit": "g", "category": "przyprawy" },
-  { "id": "papryka-wędzona", "name": "Papryka wędzona", "kcalPer100g": 282, "unit": "g", "category": "przyprawy" },
-  { "id": "sol", "name": "Sól", "kcalPer100g": 0, "unit": "g", "category": "przyprawy" },
-  { "id": "pieprz", "name": "Pieprz", "kcalPer100g": 251, "unit": "g", "category": "przyprawy" },
-  { "id": "chleb-razowy", "name": "Chleb razowy", "kcalPer100g": 259, "unit": "g", "category": "zboża" },
-  { "id": "awokado", "name": "Awokado", "kcalPer100g": 160, "unit": "szt.", "category": "owoce" },
-  { "id": "banan", "name": "Banan", "kcalPer100g": 89, "unit": "szt.", "category": "owoce" }
-]
+{
+  "soczewica-czerwona": {
+    "name": "Soczewica czerwona",
+    "unit_default": "g",
+    "calories_per_100g": 358,
+    "category": "suche-produkty"
+  },
+  "pieczarki": {
+    "name": "Pieczarki",
+    "unit_default": "g",
+    "calories_per_100g": 22,
+    "category": "warzywa-owoce"
+  },
+  "cebula": {
+    "name": "Cebula",
+    "unit_default": "szt",
+    "calories_per_100g": 40,
+    "conversion_to_grams": 150,
+    "category": "warzywa-owoce"
+  },
+  "czosnek": {
+    "name": "Czosnek",
+    "unit_default": "ząbek",
+    "calories_per_100g": 149,
+    "conversion_to_grams": 5,
+    "category": "warzywa-owoce"
+  },
+  "passata": {
+    "name": "Passata pomidorowa",
+    "unit_default": "g",
+    "calories_per_100g": 35,
+    "category": "suche-produkty"
+  },
+  "papryka-czerwona": {
+    "name": "Papryka czerwona",
+    "unit_default": "szt",
+    "calories_per_100g": 31,
+    "conversion_to_grams": 160,
+    "category": "warzywa-owoce"
+  },
+  "ser-zolty": {
+    "name": "Ser żółty",
+    "unit_default": "g",
+    "calories_per_100g": 380,
+    "category": "nabial"
+  },
+  "oliwa": {
+    "name": "Oliwa z oliwek",
+    "unit_default": "łyżka",
+    "calories_per_100g": 884,
+    "conversion_to_grams": 14,
+    "category": "inne"
+  },
+  "jajka": {
+    "name": "Jajka",
+    "unit_default": "szt",
+    "calories_per_100g": 155,
+    "conversion_to_grams": 60,
+    "category": "nabial"
+  },
+  "platki-owsiane": {
+    "name": "Płatki owsiane",
+    "unit_default": "g",
+    "calories_per_100g": 370,
+    "category": "suche-produkty"
+  },
+  "mleko": {
+    "name": "Mleko",
+    "unit_default": "ml",
+    "calories_per_100g": 60,
+    "category": "nabial"
+  },
+  "jablko": {
+    "name": "Jabłko",
+    "unit_default": "szt",
+    "calories_per_100g": 52,
+    "conversion_to_grams": 180,
+    "category": "warzywa-owoce"
+  },
+  "makaron-penne": {
+    "name": "Makaron penne",
+    "unit_default": "g",
+    "calories_per_100g": 357,
+    "category": "suche-produkty"
+  },
+  "smietana-18": {
+    "name": "Śmietana 18%",
+    "unit_default": "ml",
+    "calories_per_100g": 190,
+    "category": "nabial"
+  },
+  "sol": { "name": "Sól", "unit_default": "szczypta", "category": "przyprawy" },
+  "pieprz": { "name": "Pieprz czarny", "unit_default": "szczypta", "category": "przyprawy" },
+  "cukier": { "name": "Cukier", "unit_default": "g", "calories_per_100g": 387, "category": "inne" }
+}
