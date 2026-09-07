@@ -6,11 +6,13 @@ const { current = 'przepisy' } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
 
+// BASE_URL w Astro zawiera trailing slash (np. '/mokoszo-v2/')
+// Używamy wzorca `${base}segment` bez wiodącego '/' — unikamy podwójnego slasha
 const navItems = [
-  { id: 'przepisy', label: 'Przepisy', href: `${base}/`, icon: 'book' },
-  { id: 'plan',     label: 'Plan',     href: `${base}/plan`, icon: 'calendar' },
-  { id: 'zakupy',   label: 'Zakupy',   href: `${base}/zakupy`, icon: 'cart' },
-  { id: 'wiecej',   label: 'Więcej',   href: `${base}/ustawienia`, icon: 'settings' },
+  { id: 'przepisy', label: 'Przepisy', href: base,                    icon: 'book' },
+  { id: 'plan',     label: 'Plan',     href: `${base}plan`,           icon: 'calendar' },
+  { id: 'zakupy',   label: 'Zakupy',   href: `${base}zakupy`,         icon: 'cart' },
+  { id: 'wiecej',   label: 'Więcej',   href: `${base}ustawienia`,     icon: 'settings' },
 ];
 ---
 <nav
