@@ -54,9 +54,14 @@ test.describe('E-03: Plan dnia', () => {
     await expect(page.getByText('Zrób listę zakupów')).toBeVisible();
   });
 
-  test('Q-10: zmiana daty przy niepustym planie pokazuje ostrzeżenie', async ({ page, baseURL }) => {
+  test('multi-plan: różne daty mogą mieć niezależne plany', async ({ page, baseURL }) => {
+    // Zapisz plan na 2026-09-04
     await injectPlan(page, baseURL, planWithDish('2026-09-04', 'zapiekanka-z-soczewica'));
+    // Przejście na inną datę NIE pokazuje konfliktu — otwiera nowy pusty plan
     await goto(page, baseURL, '/plan?date=2026-09-05');
-    await expect(page.getByText(/zaplanowane.*posiłków/i)).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    // Stary plan nadal istnieje
+    await goto(page, baseURL, '/plan?date=2026-09-04');
+    await expect(page.getByText('Zapiekanka z soczewicą i pieczarkami')).toBeVisible();
   });
 });
