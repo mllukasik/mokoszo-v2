@@ -5,7 +5,10 @@ import {
   removeDishFromSlot,
   addSlotToPlan,
   removeSlotFromPlan,
-  hasPlanForOtherDate,
+  loadPlan,
+  loadAllPlans,
+  savePlan,
+  deletePlan,
 } from '../store';
 import type { DayPlan } from '../../types';
 
@@ -123,36 +126,64 @@ describe('addSlotToPlan / removeSlotFromPlan', () => {
   });
 });
 
-describe('hasPlanForOtherDate (Q-10)', () => {
-  beforeEach(() => localStorageMock.clear());
-
-  it('zwraca null gdy localStorage pusty', () => {
-    expect(hasPlanForOtherDate('2026-09-05')).toBeNull();
-  });
-
-  it('zwraca null gdy plan na tę samą datę', () => {
-    let plan = createEmptyPlan('2026-09-05', ['obiad']);
-    plan = addDishToSlot(plan, plan.slots[0].id, 'zapiekanka');
-    // addDishToSlot zapisuje do localStorage
-    expect(hasPlanForOtherDate('2026-09-05')).toBeNull();
-  });
-
-  it('zwraca plan gdy jest na inną datę i ma dania', () => {
+describe('multi-plan storage', () => {
+  beforeEach(() => {
     uuidCounter = 0;
     localStorageMock.clear();
-    let plan = createEmptyPlan('2026-09-04', ['obiad']);
-    plan = addDishToSlot(plan, plan.slots[0].id, 'zapiekanka');
-    const conflict = hasPlanForOtherDate('2026-09-05');
-    expect(conflict).not.toBeNull();
-    expect(conflict?.date).toBe('2026-09-04');
   });
 
-  it('zwraca null gdy plan na inną datę ale pusty', () => {
-    uuidCounter = 0;
-    localStorageMock.clear();
-    // Zapisz pusty plan ręcznie
-    const plan = createEmptyPlan('2026-09-04', ['obiad']);
-    localStorage.setItem('jutrojem:plan', JSON.stringify(plan));
-    expect(hasPlanForOtherDate('2026-09-05')).toBeNull();
+  it('loadAllPlans zwraca pustą listę gdy brak danych', () => {
+    expect(loadAllPlans()).toEqual([]);
+  });
+
+  it('savePlan / loadPlan zapisuje i odczytuje plan po dacie', () => {
+    const plan = createEmptyPlan('2026-09-05', ['obiad']);
+    savePlan(plan);
+    const loaded = loadPlan('2026-09-05');
+    expect(loaded?.date).toBe('2026-09-05');
+  });
+
+  it('loadPlan zwraca null dla nieistniejącej daty', () => {
+    const plan = createEmptyPlan('2026-09-05', ['obiad']);
+    savePlan(plan);
+    expect(loadPlan('2026-09-07')).toBeNull();
+  });
+
+  it('można zapisać plany na wiele dat', () => {
+    savePlan(createEmptyPlan('2026-09-05', ['obiad']));
+    savePlan(createEmptyPlan('2026-09-06', ['sniadanie']));
+    savePlan(createEmptyPlan('2026-09-07', ['kolacja']));
+    const all = loadAllPlans();
+    expect(all).toHaveLength(3);
+  });
+
+  it('loadAllPlans zwraca plany posortowane od najnowszego', () => {
+    savePlan(createEmptyPlan('2026-09-05', ['obiad']));
+    savePlan(createEmptyPlan('2026-09-07', ['kolacja']));
+    savePlan(createEmptyPlan('2026-09-06', ['sniadanie']));
+    const all = loadAllPlans();
+    expect(all[0].date).toBe('2026-09-07');
+    expect(all[1].date).toBe('2026-09-06');
+    expect(all[2].date).toBe('2026-09-05');
+  });
+
+  it('deletePlan usuwa plan po dacie', () => {
+    savePlan(createEmptyPlan('2026-09-05', ['obiad']));
+    savePlan(createEmptyPlan('2026-09-06', ['kolacja']));
+    deletePlan('2026-09-05');
+    expect(loadPlan('2026-09-05')).toBeNull();
+    expect(loadPlan('2026-09-06')).not.toBeNull();
+  });
+
+  it('migruje stary format jutrojem:plan do multi-plan', () => {
+    // Symuluj stary zapis
+    const legacyPlan = createEmptyPlan('2026-09-04', ['obiad']);
+    localStorage.setItem('jutrojem:plan', JSON.stringify(legacyPlan));
+    // loadAllPlans powinien migrować
+    const all = loadAllPlans();
+    expect(all).toHaveLength(1);
+    expect(all[0].date).toBe('2026-09-04');
+    // Stary klucz powinien zostać usunięty
+    expect(localStorage.getItem('jutrojem:plan')).toBeNull();
   });
 });

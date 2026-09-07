@@ -1,6 +1,9 @@
 import type { DayPlan, AppSettings, SlotTag } from '../types';
 
-const KEY_PLAN = 'jutrojem:plan';
+// Nowy klucz: wiele planów jako słownik date→DayPlan
+const KEY_PLANS = 'jutrojem:plans';
+// Legacy (Q-10 — jeden plan): migrujemy automatycznie
+const KEY_PLAN_LEGACY = 'jutrojem:plan';
 const KEY_SETTINGS = 'jutrojem:settings';
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -8,35 +11,59 @@ const DEFAULT_SETTINGS: AppSettings = {
   seenLocalStorageNotice: false,
 };
 
-// ——— Plan ———
+// ——— Migracja z legacy (jeden plan) → multi-plan ———
 
-export function loadPlan(date: string): DayPlan | null {
+function migrateLegacy(): Record<string, DayPlan> {
   try {
-    const raw = localStorage.getItem(KEY_PLAN);
-    if (!raw) return null;
+    const raw = localStorage.getItem(KEY_PLAN_LEGACY);
+    if (!raw) return {};
     const plan: DayPlan = JSON.parse(raw);
-    // Q-10: przechowujemy jeden dzień; jeśli daty różne → brak planu
-    return plan.date === date ? plan : null;
-  } catch { return null; }
+    localStorage.removeItem(KEY_PLAN_LEGACY);
+    const map: Record<string, DayPlan> = { [plan.date]: plan };
+    localStorage.setItem(KEY_PLANS, JSON.stringify(map));
+    return map;
+  } catch { return {}; }
 }
 
-export function hasPlanForOtherDate(date: string): DayPlan | null {
+function loadAllPlansMap(): Record<string, DayPlan> {
   try {
-    const raw = localStorage.getItem(KEY_PLAN);
-    if (!raw) return null;
-    const plan: DayPlan = JSON.parse(raw);
-    if (plan.date === date) return null;
-    const hasContent = plan.slots.some(s => s.dishes.length > 0);
-    return hasContent ? plan : null;
-  } catch { return null; }
+    const raw = localStorage.getItem(KEY_PLANS);
+    if (raw) return JSON.parse(raw) as Record<string, DayPlan>;
+    // Sprawdź legacy
+    return migrateLegacy();
+  } catch { return {}; }
+}
+
+// ——— Plan ———
+
+export function loadAllPlans(): DayPlan[] {
+  const map = loadAllPlansMap();
+  return Object.values(map).sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function loadPlan(date: string): DayPlan | null {
+  return loadAllPlansMap()[date] ?? null;
 }
 
 export function savePlan(plan: DayPlan): void {
-  localStorage.setItem(KEY_PLAN, JSON.stringify(plan));
+  try {
+    const map = loadAllPlansMap();
+    map[plan.date] = plan;
+    localStorage.setItem(KEY_PLANS, JSON.stringify(map));
+  } catch { /* localStorage może być niedostępny */ }
+}
+
+export function deletePlan(date: string): void {
+  try {
+    const map = loadAllPlansMap();
+    delete map[date];
+    localStorage.setItem(KEY_PLANS, JSON.stringify(map));
+  } catch { }
 }
 
 export function clearPlan(): void {
-  localStorage.removeItem(KEY_PLAN);
+  localStorage.removeItem(KEY_PLANS);
+  localStorage.removeItem(KEY_PLAN_LEGACY);
 }
 
 export function createEmptyPlan(date: string, slotNames: SlotTag[]): DayPlan {

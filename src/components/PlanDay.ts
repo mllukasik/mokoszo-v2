@@ -1,8 +1,7 @@
 import type { DayPlan, PlanSlot, SlotTag } from '../types';
 import {
-  loadPlan, savePlan, createEmptyPlan, addDishToSlot,
-  removeDishFromSlot, addSlotToPlan, removeSlotFromPlan,
-  hasPlanForOtherDate, loadSettings,
+  loadPlan, loadAllPlans, savePlan, deletePlan, createEmptyPlan, addDishToSlot,
+  removeDishFromSlot, addSlotToPlan, removeSlotFromPlan, loadSettings,
 } from '../scripts/store';
 import { SLOT_LABELS } from '../types';
 
@@ -29,14 +28,15 @@ function init() {
   );
 
   const params = new URLSearchParams(window.location.search);
-  currentDate = params.get('date')?.trim() || getTodayDate();
+  const dateParam = params.get('date')?.trim();
 
-  // Q-10: jeden dzień — sprawdź konflikt daty
-  const conflictPlan = hasPlanForOtherDate(currentDate);
-  if (conflictPlan) {
-    showDateConflictDialog(conflictPlan);
+  // Bez ?date= → pokaż listę planów
+  if (!dateParam) {
+    showPlanList();
     return;
   }
+
+  currentDate = dateParam;
 
   const settings = loadSettings();
   plan = loadPlan(currentDate) ?? createEmptyPlan(currentDate, settings.defaultSlots);
@@ -56,6 +56,109 @@ function init() {
   }
 }
 
+// ——— Lista planów ———
+
+function showPlanList() {
+  const mount = document.getElementById('plan-mount');
+  if (!mount) return;
+
+  const plans = loadAllPlans(); // posortowane od najnowszego
+
+  const todayDate = getTodayDate();
+  const base = getBaseUrl();
+
+  const planRows = plans.map(p => {
+    const totalDishes = p.slots.reduce((n, s) => n + s.dishes.length, 0);
+    const totalCal = p.slots.reduce((n, s) =>
+      n + s.dishes.reduce((m, d) => {
+        const rec = allRecipes.find(r => r.slug === d.recipeSlug);
+        return m + (rec?.calories ?? 0);
+      }, 0), 0);
+    const dateFormatted = new Date(p.date).toLocaleDateString('pl-PL', {
+      weekday: 'long', day: 'numeric', month: 'long',
+    });
+    const isToday = p.date === todayDate;
+
+    return `
+      <li class="border-b border-kreska last:border-0">
+        <a
+          href="${base}/plan?date=${p.date}"
+          class="flex items-center gap-3 px-4 py-4 hover:bg-porcelana active:bg-kreska transition-colors"
+        >
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-semibold text-[15px] capitalize text-ink truncate">${dateFormatted}</span>
+              ${isToday ? '<span class="text-[11px] font-bold bg-kurkuma text-kurkuma-tekst rounded-full px-2 py-0.5 flex-shrink-0">dziś</span>' : ''}
+            </div>
+            <span class="text-[13px] text-ink-2">
+              ${totalDishes === 0 ? 'Brak dań' : `${totalDishes} ${totalDishes === 1 ? 'danie' : 'dania'}`}${totalCal > 0 ? ` · ${totalCal} kcal` : ''}
+            </span>
+          </div>
+          <svg class="w-5 h-5 text-ink-2 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </li>
+    `;
+  }).join('');
+
+  mount.innerHTML = `
+    <div class="max-w-[680px] mx-auto">
+      <header class="px-4 pt-6 pb-4">
+        <h1 class="text-2xl font-extrabold tracking-tight mb-1">Plany posiłków</h1>
+        <p class="text-[14px] text-ink-2">Twoje zapisane plany dnia</p>
+      </header>
+
+      <div class="px-4 pb-4">
+        <button
+          id="btn-new-plan"
+          class="w-full py-3.5 rounded-l bg-kurkuma text-kurkuma-tekst font-bold min-h-touch flex items-center justify-center gap-2"
+        >
+          + Zaplanuj nowy dzień
+        </button>
+      </div>
+
+      ${plans.length > 0 ? `
+        <ul class="bg-biel border-t border-b border-kreska">
+          ${planRows}
+        </ul>
+      ` : `
+        <div class="px-4 py-12 text-center">
+          <p class="text-ink-2 text-[15px]">Nie masz jeszcze żadnych planów.</p>
+          <p class="text-ink-2 text-[13px] mt-1">Zacznij od przycisku powyżej.</p>
+        </div>
+      `}
+    </div>
+  `;
+
+  document.getElementById('btn-new-plan')?.addEventListener('click', () => {
+    showNewPlanDatePicker(base);
+  });
+}
+
+function showNewPlanDatePicker(base: string) {
+  const todayDate = getTodayDate();
+  const overlay = document.createElement('div');
+  overlay.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+  overlay.innerHTML = `
+    <div class="bg-biel rounded-l p-5 w-full max-w-[320px]" role="dialog" aria-label="Wybierz dzień">
+      <p class="font-bold text-[16px] mb-4">Wybierz dzień</p>
+      <input type="date" id="new-plan-date" value="${todayDate}" min="${todayDate}"
+        class="w-full border border-kreska rounded-m px-3 py-2 text-[15px] mb-4 min-h-touch" />
+      <div class="flex gap-3">
+        <button id="btn-new-plan-ok" class="flex-1 py-3 rounded-l bg-kurkuma text-kurkuma-tekst font-bold min-h-touch">Dalej</button>
+        <button id="btn-new-plan-cancel" class="flex-1 py-3 rounded-l border border-kreska text-ink font-semibold min-h-touch">Anuluj</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('btn-new-plan-cancel')?.addEventListener('click', () => overlay.remove());
+  document.getElementById('btn-new-plan-ok')?.addEventListener('click', () => {
+    const date = (document.getElementById('new-plan-date') as HTMLInputElement).value;
+    overlay.remove();
+    if (date) window.location.href = `${base}/plan?date=${date}`;
+  });
+}
+
 function getTodayDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -73,49 +176,6 @@ function getBaseUrl(): string {
   return (meta?.content ?? '').replace(/\/$/, '');
 }
 
-// ——— Konflikt daty (Q-10) ———
-
-function showDateConflictDialog(existingPlan: DayPlan) {
-  const mount = document.getElementById('plan-mount');
-  if (!mount) return;
-
-  const totalDishes = existingPlan.slots.reduce((n, s) => n + s.dishes.length, 0);
-  const existingDate = new Date(existingPlan.date).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' });
-  const requestedDate = new Date(currentDate).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' });
-
-  mount.innerHTML = `
-    <div class="page-content max-w-[480px] mx-auto py-8 px-4">
-      <div class="bg-biel border-l-4 border-nie rounded-r-m p-5">
-        <p class="font-bold mb-2">Masz zaplanowane ${totalDishes} posiłków na ${existingDate}.</p>
-        <p class="text-ink-2 text-[14px] mb-4">
-          Przejście na ${requestedDate} zacznie plan od nowa — poprzedni dzień zostanie usunięty.
-        </p>
-        <div class="flex gap-3 flex-wrap">
-          <button id="btn-confirm-change"
-            class="px-4 py-2.5 rounded-l bg-nie text-white font-bold min-h-touch">
-            Zacznij nowy dzień
-          </button>
-          <button id="btn-cancel-change"
-            class="px-4 py-2.5 rounded-l border border-kreska bg-biel text-ink font-semibold min-h-touch">
-            Zostań na ${existingDate}
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('btn-confirm-change')?.addEventListener('click', () => {
-    const settings = loadSettings();
-    plan = createEmptyPlan(currentDate, settings.defaultSlots);
-    savePlan(plan);
-    renderUI();
-  });
-
-  document.getElementById('btn-cancel-change')?.addEventListener('click', () => {
-    // Wróć do planu istniejącego dnia
-    window.location.href = `${getBaseUrl()}/plan?date=${existingPlan.date}`;
-  });
-}
 
 // ——— Obliczenia kalorii ———
 
