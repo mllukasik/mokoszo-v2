@@ -1,0 +1,29 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-porcelana text-ink font-ui;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  img { @apply block max-w-full; }
+  button { @apply cursor-pointer font-ui; }
+  :focus-visible {
+    outline: 3px solid var(--kurkuma);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

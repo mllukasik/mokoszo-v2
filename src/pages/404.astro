@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+const base = import.meta.env.BASE_URL;
+---
+<Base title="Nie znaleziono — Jutro jem">
+  <div class="min-h-dvh bg-porcelana flex flex-col items-center justify-center p-8 text-center">
+    <p class="text-6xl mb-6" aria-hidden="true">🔍</p>
+    <h1 class="text-2xl font-ui font-bold text-ink mb-3">Nie znaleziono strony</h1>
+    <p class="text-ink-2 mb-8">Sprawdź adres lub wróć do katalogu przepisów.</p>
+    <a
+      href={`${base}/`}
+      class="inline-flex items-center gap-2 bg-emalia-500 text-na-emalii font-ui font-semibold px-6 py-3 rounded-l min-h-touch hover:bg-emalia-800 transition-colors"
+    >
+      Wróć do przepisów
+    </a>
+  </div>
+</Base>
