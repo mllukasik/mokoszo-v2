@@ -172,10 +172,26 @@ function renderUI() {
 
       <!-- Suma dnia -->
       ${dayCal.total > 0 ? `
-        <div class="bg-biel border-b border-kreska px-4 py-3 flex items-center justify-between text-[14px]">
+        <div class="bg-biel border-b border-kreska px-4 py-3 flex items-center justify-between gap-3 text-[14px]">
           <span class="font-semibold">Łącznie w tym dniu</span>
-          <span class="${dayCal.incomplete ? 'text-kurkuma-tekst' : 'text-ink-2'}">
-            ${dayCal.total} kcal${dayCal.incomplete ? ' · suma niepełna ⚠' : ''}
+          <span class="text-right">
+            <span class="font-semibold ${dayCal.incomplete ? 'text-ink' : 'text-ink-2'}">
+              ${dayCal.total} kcal
+            </span>
+            ${dayCal.incomplete ? `
+              <span class="text-kurkuma font-semibold text-[13px]">· suma niepełna ⚠</span>
+              <button
+                type="button"
+                class="btn-incomplete-why block ml-auto text-[12px] text-kurkuma-tekst underline min-h-touch px-1"
+                aria-expanded="false"
+                aria-controls="incomplete-explanation-day"
+              >
+                Dlaczego?
+              </button>
+              <span id="incomplete-explanation-day" hidden class="block text-[13px] text-ink-2 mt-1">
+                Jeden składnik tego przepisu nie ma jeszcze podanej kaloryczności, więc suma jest zaniżona.
+              </span>
+            ` : ''}
           </span>
         </div>
       ` : ''}
@@ -221,8 +237,20 @@ function renderSlot(slot: PlanSlot): string {
         <div>
           <h2 class="font-bold text-[16px]">${label}</h2>
           ${slotCal.total > 0 ? `
-            <span class="text-[12.5px] ${slotCal.incomplete ? 'text-kurkuma-tekst' : 'text-ink-2'}">
-              ${slotCal.total} kcal${slotCal.incomplete ? ' ⚠' : ''}
+            <span class="text-[12.5px] ${slotCal.incomplete ? 'text-ink' : 'text-ink-2'}">
+              <span class="font-semibold">${slotCal.total} kcal</span>${slotCal.incomplete ? `
+              <span class="text-kurkuma font-semibold text-[13px]"> · suma niepełna ⚠</span>
+              <button
+                type="button"
+                class="btn-incomplete-why text-[12px] text-kurkuma-tekst underline min-h-touch px-1"
+                aria-expanded="false"
+                aria-controls="incomplete-explanation-${slot.id}"
+              >
+                Dlaczego?
+              </button>
+              <span id="incomplete-explanation-${slot.id}" hidden class="block text-[13px] text-ink-2 mt-1">
+                Jeden składnik tego przepisu nie ma jeszcze podanej kaloryczności, więc suma jest zaniżona.
+              </span>` : ''}
             </span>
           ` : ''}
         </div>
@@ -268,8 +296,8 @@ function renderDish(recipeSlug: string, slotId: string): string {
   return `
     <li class="flex items-center gap-3 py-1">
       ${recipe.image
-        ? `<img src="${recipe.image}" alt="" class="w-10 h-10 rounded-s object-cover flex-shrink-0" />`
-        : `<div class="w-10 h-10 rounded-s bg-kreska flex-shrink-0"></div>`
+        ? `<img src="${recipe.image}" alt="" class="w-10 h-10 rounded-s object-cover flex-shrink-0" loading="lazy" />`
+        : `<div class="w-10 h-10 rounded-s bg-kreska flex items-center justify-center flex-shrink-0" aria-hidden="true">🍽️</div>`
       }
       <a href="${base}/przepis/${recipeSlug}" class="flex-1 min-h-touch flex items-center text-[14px] font-semibold text-ink hover:text-emalia-500">
         ${recipe.title}
@@ -293,6 +321,23 @@ function renderDish(recipeSlug: string, slotId: string): string {
 // ——— Eventy ———
 
 function attachEvents() {
+  // Wyjaśnienie niepełnej sumy kalorii (E-08: oznaczenie tekstowe + "Dlaczego?")
+  document.querySelectorAll('.btn-incomplete-why').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetId = (btn as HTMLElement).getAttribute('aria-controls');
+      if (!targetId) return;
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      const expanded = (btn as HTMLElement).getAttribute('aria-expanded') === 'true';
+      (btn as HTMLElement).setAttribute('aria-expanded', String(!expanded));
+      if (expanded) {
+        target.setAttribute('hidden', '');
+      } else {
+        target.removeAttribute('hidden');
+      }
+    });
+  });
+
   // Menu dania (podmień / usuń)
   document.querySelectorAll('.btn-dish-menu').forEach(btn => {
     btn.addEventListener('click', () => {

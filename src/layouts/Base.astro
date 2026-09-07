@@ -27,5 +27,25 @@ const {
 </head>
 <body class="min-h-dvh">
   <slot />
+  <script>
+    // Sprawdź dostępność localStorage (prywatne okno, blokada)
+    function isLocalStorageAvailable() {
+      try {
+        localStorage.setItem('__test', '1');
+        localStorage.removeItem('__test');
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    if (!isLocalStorageAvailable()) {
+      const banner = document.createElement('div');
+      banner.className = 'bg-nie-tint border-b border-nie px-4 py-3 text-[13px] text-nie font-medium text-center';
+      banner.setAttribute('role', 'alert');
+      banner.textContent = 'Plan nie może być zapisany — przeglądarka blokuje przechowywanie danych. Przeglądanie działa normalnie.';
+      document.body.prepend(banner);
+    }
+  </script>
 </body>
 </html>
