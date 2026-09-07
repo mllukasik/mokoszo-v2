@@ -264,14 +264,14 @@ function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): st
       <!-- Zdjęcie na całą kartę -->
       <div class="absolute inset-0">
         ${image}
-        <!-- Gradient czytelności: mocny u dołu, lekki u góry -->
-        <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 28%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.25) 100%)"></div>
+        <!-- Gradient czytelności -->
+        <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.75) 30%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0.35) 100%)"></div>
         <!-- Metadane nad gradientem (widoczne w zwiniętym) -->
         <div class="absolute bottom-0 left-0 right-0 p-4 ${showDetails ? 'hidden' : ''}">
-          <h2 class="text-xl font-extrabold text-white leading-tight mb-1" style="text-shadow: 0 1px 8px rgba(0,0,0,0.7), 0 2px 24px rgba(0,0,0,0.5)">
+          <h2 class="text-xl font-extrabold text-white leading-tight mb-1" style="text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 2px 16px rgba(0,0,0,0.8)">
             ${recipe.title}
           </h2>
-          <p class="text-[13px] text-white/90" style="text-shadow: 0 1px 6px rgba(0,0,0,0.8)">
+          <p class="text-[13px] text-white" style="text-shadow: 0 1px 4px rgba(0,0,0,0.9)">
             ${recipe.timeMinutes} min · ${recipe.calories} kcal
             · ${recipe.slots.map((s) => SLOT_LABELS[s as SlotTag]).join(', ')}
           </p>
