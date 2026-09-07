@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 // baseURL zawiera już base path (/mokoszo-v2) — buduj URL-e względem niego,
 // bo page.goto('/plan') trafiłby na korzeń hosta, nie aplikacji.
-async function goto(page: any, baseURL: string | undefined, path: string) {
+async function goto(page: Page, baseURL: string | undefined, path: string) {
   const base = (baseURL ?? '').replace(/\/$/, '');
   await page.goto(`${base}${path}`);
 }
