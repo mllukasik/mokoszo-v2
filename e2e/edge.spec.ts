@@ -92,12 +92,13 @@ test.describe('E-08: Stany brzegowe', () => {
     await expect(page.getByText(/działa bez internetu/)).toBeVisible();
   });
 
-  test('przepis bez zdjęcia nie blokuje strony głównej', async ({ page, baseURL }) => {
+  test('strona główna wyświetla przepisy', async ({ page, baseURL }) => {
     await goto(page, baseURL, '/');
-    // Większość przepisów nie ma zdjęcia — kafelki pokazują zastępnik
-    await expect(page.getByText('🍽️').first()).toBeVisible();
+    // Przepisy są widoczne na liście
     await expect(
       page.getByRole('link', { name: 'Owsianka z jabłkiem i cynamonem' }),
     ).toBeVisible();
+    // Kafelki mają obrazki (wszystkie przepisy mają teraz zdjęcia Unsplash)
+    await expect(page.locator('img').first()).toBeVisible();
   });
 });
