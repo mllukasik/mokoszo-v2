@@ -1,115 +1,104 @@
-// Sumowanie składników dla E-06 (FR-13).
-// Grupuje składniki ze wszystkich dań w planie, sumuje te same jednostki,
-// oznacza konfliktem (mergeError) składniki w różnych jednostkach
-// bez wspólnego przelicznika. Sortuje według kolejności kategorii.
-
 import type { DayPlan, ShoppingItem } from '../types';
 import { SHOPPING_CATEGORIES } from '../data/slots';
 
-export interface RecipeInput {
-  slug: string;
-  title: string;
-  ingredients: Array<{ slug: string; name: string; amount: number; unit: string }>;
+interface RecipeIngredient {
+  slug: string; name: string; amount: number; unit: string;
 }
 
-export interface IngredientMeta {
-  name: string;
-  unit_default?: string;
-  category?: string;
-  conversion_to_grams?: number;
-  calories_per_100g?: number;
+interface RecipeStub {
+  slug: string; title: string; ingredients: RecipeIngredient[];
 }
 
-const CATEGORY_ORDER = new Map<string, number>(
-  SHOPPING_CATEGORIES.map((c, i) => [c, i]),
-);
-
-function categoryRank(category: string | undefined): number {
-  if (!category) return SHOPPING_CATEGORIES.length;
-  return CATEGORY_ORDER.get(category) ?? SHOPPING_CATEGORIES.length;
+interface IngredientEntry {
+  name: string; unit_default: string;
+  calories_per_100g?: number; conversion_to_grams?: number;
+  category: string;
 }
+
+type IngredientsDict = Record<string, IngredientEntry>;
 
 export function buildShoppingList(
   plan: DayPlan,
-  recipes: RecipeInput[],
-  ingredients: Record<string, IngredientMeta>,
+  recipes: RecipeStub[],
+  ingredientsDict: IngredientsDict
 ): ShoppingItem[] {
-  const bySlug = new Map(recipes.map((r) => [r.slug, r]));
-
-  interface Acc {
-    ingredientSlug: string;
-    name: string;
-    unit: string;
-    category: string;
-    totalAmount: number;
-    sources: Array<{ recipeTitle: string; amount: number; unit: string }>;
-    mergeError: boolean;
-  }
-
-  // Klucz grupowania: slug + jednostka. Ten sam slug w różnych jednostkach
-  // daje osobne pozycje (nie sumujemy bez przelicznika).
-  const acc = new Map<string, Acc>();
-  // Śledzi, w ilu różnych jednostkach wystąpił dany składnik.
-  const unitsPerSlug = new Map<string, Set<string>>();
+  // Zbierz wszystkie składniki ze wszystkich dań
+  const itemsMap = new Map<string, ShoppingItem>();
 
   for (const slot of plan.slots) {
     for (const dish of slot.dishes) {
-      const recipe = bySlug.get(dish.recipeSlug);
+      const recipe = recipes.find(r => r.slug === dish.recipeSlug);
       if (!recipe) continue;
+
       for (const ing of recipe.ingredients) {
-        const meta = ingredients[ing.slug];
-        const key = `${ing.slug}|||${ing.unit}`;
-        let entry = acc.get(key);
-        if (!entry) {
-          entry = {
+        const dictEntry = ingredientsDict[ing.slug];
+        const existing = itemsMap.get(ing.slug);
+
+        if (existing) {
+          // Sprawdź zgodność jednostek
+          if (existing.unit === ing.unit) {
+            existing.totalAmount += ing.amount;
+            existing.sources.push({ recipeTitle: recipe.title, amount: ing.amount, unit: ing.unit });
+          } else {
+            // Spróbuj konwersji na gramy
+            const convertedExisting = toGrams(existing.totalAmount, existing.unit, dictEntry);
+            const convertedNew = toGrams(ing.amount, ing.unit, dictEntry);
+
+            if (convertedExisting !== null && convertedNew !== null) {
+              existing.totalAmount = convertedExisting + convertedNew;
+              existing.unit = 'g';
+              existing.sources.push({ recipeTitle: recipe.title, amount: ing.amount, unit: ing.unit });
+            } else {
+              // Nie dało się zsumować — dwie osobne pozycje z mergeError
+              const errorKey = `${ing.slug}__${ing.unit}`;
+              const errorItem: ShoppingItem = {
+                ingredientSlug: errorKey,
+                name: ing.name,
+                totalAmount: ing.amount,
+                unit: ing.unit,
+                category: dictEntry?.category ?? 'inne',
+                sources: [{ recipeTitle: recipe.title, amount: ing.amount, unit: ing.unit }],
+                checked: false,
+                mergeError: true,
+              };
+              itemsMap.set(errorKey, errorItem);
+            }
+          }
+        } else {
+          itemsMap.set(ing.slug, {
             ingredientSlug: ing.slug,
-            name: meta?.name ?? ing.name,
+            name: ing.name,
+            totalAmount: ing.amount,
             unit: ing.unit,
-            category: meta?.category ?? 'inne',
-            totalAmount: 0,
-            sources: [],
-            mergeError: false,
-          };
-          acc.set(key, entry);
+            category: dictEntry?.category ?? 'inne',
+            sources: [{ recipeTitle: recipe.title, amount: ing.amount, unit: ing.unit }],
+            checked: false,
+          });
         }
-        entry.totalAmount += ing.amount;
-        entry.sources.push({ recipeTitle: recipe.title, amount: ing.amount, unit: ing.unit });
-
-        let units = unitsPerSlug.get(ing.slug);
-        if (!units) {
-          units = new Set();
-          unitsPerSlug.set(ing.slug, units);
-        }
-        units.add(ing.unit);
       }
     }
   }
 
-  // Oznacz konflikty jednostek.
-  for (const [slug, units] of unitsPerSlug) {
-    if (units.size > 1) {
-      for (const entry of acc.values()) {
-        if (entry.ingredientSlug === slug) entry.mergeError = true;
-      }
-    }
-  }
-
-  const items: ShoppingItem[] = [...acc.values()].map((e) => ({
-    ingredientSlug: e.ingredientSlug,
-    name: e.name,
-    totalAmount: e.totalAmount,
-    unit: e.unit,
-    category: e.category,
-    sources: e.sources,
-    checked: false,
-    ...(e.mergeError ? { mergeError: true as const } : {}),
-  }));
-
+  // Sortuj według kolejności kategorii zakupowych
+  const items = Array.from(itemsMap.values());
   items.sort((a, b) => {
-    const rank = categoryRank(a.category) - categoryRank(b.category);
-    if (rank !== 0) return rank;
-    return a.name.localeCompare(b.name, 'pl');
+    const ai = SHOPPING_CATEGORIES.indexOf(a.category as never);
+    const bi = SHOPPING_CATEGORIES.indexOf(b.category as never);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
   });
 
   return items;
+}
+
+function toGrams(
+  amount: number,
+  unit: string,
+  entry: IngredientEntry | undefined
+): number | null {
+  if (!entry) return null;
+  if (unit === 'g') return amount;
+  if (unit === 'szt' && entry.conversion_to_grams) {
+    return amount * entry.conversion_to_grams;
+  }
+  return null;
 }

@@ -31,3 +31,13 @@ export const SHOPPING_CATEGORIES = [
 ] as const;
 
 export type ShoppingCategory = typeof SHOPPING_CATEGORIES[number];
+
+export const SHOPPING_CATEGORY_LABELS: Record<string, string> = {
+  'warzywa-owoce': 'Warzywa i owoce',
+  'nabial': 'Nabiał',
+  'mieso-ryby': 'Mięso i ryby',
+  'suche-produkty': 'Produkty suche',
+  'pieczywo': 'Pieczywo',
+  'przyprawy': 'Przyprawy',
+  'inne': 'Pozostałe',
+};

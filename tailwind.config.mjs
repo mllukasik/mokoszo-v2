@@ -10,6 +10,7 @@ export default {
         kreska:       'var(--kreska)',
         ink:          'var(--ink)',
         'ink-2':      'var(--ink-2)',
+        'ink-3':      'var(--ink-3)',
         'emalia-900': 'var(--emalia-900)',
         'emalia-800': 'var(--emalia-800)',
         'emalia-500': 'var(--emalia-500)',
