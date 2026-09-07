@@ -71,11 +71,15 @@ test.describe('Routing i nawigacja (krok 0.4)', () => {
     baseURL,
   }) => {
     await goto(page, baseURL, '/wybieram?date=2026-09-05&slot=obiad');
-    await expect(page.getByTestId('picker-date')).toHaveText('2026-09-05');
-    await expect(page.getByTestId('picker-slot')).toHaveText('obiad');
-    await expect(page.getByTestId('slot-filter-note')).toContainText('Pokaż wszystkie przepisy');
+    // Filtr slotu odczytany z parametru ?slot=obiad (E-04, krok 1.1)
+    await expect(page.getByText('Filtr: Obiad')).toBeVisible();
+    await expect(page.getByText('Pokaż wszystkie przepisy').first()).toBeVisible();
+    // Licznik puli widoczny od początku
+    await expect(page.getByText(/z \d+ przepisów/)).toBeVisible();
 
-    await page.getByTestId('close-picker').click();
+    const close = page.getByRole('link', { name: 'Zamknij tryb wybierania' });
+    await expect(close).toHaveAttribute('href', /plan\?date=2026-09-05/);
+    await close.click();
     await expect(page).toHaveURL(/plan\?date=2026-09-05/);
   });
 
