@@ -36,6 +36,9 @@ export default {
       minHeight: {
         touch: '48px',   // cel dotykowy minimum
       },
+      minWidth: {
+        touch: '48px',   // cel dotykowy minimum (szerokość)
+      },
     },
   },
   plugins: [],

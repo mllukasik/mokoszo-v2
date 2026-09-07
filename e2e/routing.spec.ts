@@ -48,22 +48,51 @@ test.describe('Routing i nawigacja (krok 0.4)', () => {
 
   test('plan czyta ?date= i linkuje do wybierania oraz zakupów', async ({ page, baseURL }) => {
     await goto(page, baseURL, '/plan?date=2026-09-05');
-    await expect(page.getByTestId('plan-date')).toHaveText('2026-09-05');
-    await expect(page.getByTestId('pick-obiad')).toHaveAttribute(
+    // Dzień po polsku, z dniem tygodnia (E-03)
+    await expect(page.getByRole('heading', { name: /września/ })).toBeVisible();
+    // Pusty slot linkuje do trybu wybierania z datą i id slotu
+    const pick = page.getByRole('link', { name: 'Wybierz przepis' }).first();
+    await expect(pick).toHaveAttribute(
       'href',
-      /wybieram\?date=2026-09-05&slot=obiad/,
+      /wybieram\?date=2026-09-05&slot=.+/,
     );
-    await expect(page.getByTestId('goto-shopping')).toHaveAttribute(
+    // Po zaplanowaniu dania widoczny przycisk zakupów z datą
+    await goto(page, baseURL, '/');
+    await page.evaluate(() => localStorage.clear());
+    await page.evaluate(() => {
+      localStorage.setItem('jutrojem:plan', JSON.stringify({
+        date: '2026-09-05',
+        slots: [{
+          id: 'slot-1', name: 'obiad', label: 'Obiad',
+          dishes: [{ recipeSlug: 'zapiekanka-z-soczewica', addedAt: Date.now() }],
+        }],
+      }));
+    });
+    await goto(page, baseURL, '/plan?date=2026-09-05');
+    await expect(page.getByRole('link', { name: /Zrób listę zakupów/ })).toHaveAttribute(
       'href',
       /zakupy\?date=2026-09-05/,
     );
   });
 
   test('powrót z hash-em podświetla slot', async ({ page, baseURL }) => {
-    await goto(page, baseURL, '/plan?date=2026-09-05#slot-obiad');
-    const slot = page.locator('#slot-obiad');
+    await goto(page, baseURL, '/');
+    await page.evaluate(() => localStorage.clear());
+    await goto(page, baseURL, '/plan?date=2026-09-05');
+    // Odczytaj prawdziwe id slotu z linku trybu wybierania (E-03 używa UUID)
+    const href = await page
+      .getByRole('link', { name: 'Wybierz przepis' })
+      .first()
+      .getAttribute('href');
+    const slotId = new URL(href ?? '', 'http://localhost').searchParams.get('slot');
+    expect(slotId).toBeTruthy();
+    // Nawigacja różniąca się tylko hashem nie przeładowuje strony —
+    // zejdź z niej, żeby wejście z hashem było pełnym ładowaniem.
+    await goto(page, baseURL, '/');
+    await goto(page, baseURL, `/plan?date=2026-09-05#slot-${slotId}`);
+    const slot = page.locator(`#slot-${slotId}`);
     await expect(slot).toBeVisible();
-    await expect(slot).toHaveClass(/slot--just-updated/);
+    await expect(slot).toHaveClass(/ring-kurkuma/);
   });
 
   test('wybieram czyta ?date= i ?slot=, zamknięcie wraca do planu', async ({
@@ -109,7 +138,7 @@ test.describe('Routing i nawigacja (krok 0.4)', () => {
 
   test('dane przepisów wbudowane jako JSON', async ({ page, baseURL }) => {
     await goto(page, baseURL, '/plan?date=2026-09-05');
-    const raw = await page.textContent('#recipes-data');
+    const raw = await page.textContent('#all-recipes');
     const data = JSON.parse(raw ?? '[]');
     expect(Array.isArray(data)).toBe(true);
     expect(data.length).toBeGreaterThanOrEqual(1);

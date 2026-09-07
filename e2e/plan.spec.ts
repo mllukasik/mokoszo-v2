@@ -45,7 +45,7 @@ test.describe('E-03: Plan dnia', () => {
     // Wstrzyknij plan do localStorage
     await injectPlan(page, baseURL, planWithDish('2026-09-05', 'zapiekanka-z-soczewica'));
     await goto(page, baseURL, '/plan?date=2026-09-05');
-    await expect(page.getByText(/kcal/)).toBeVisible();
+    await expect(page.getByText(/kcal/).first()).toBeVisible();
   });
 
   test('przycisk "Zrób listę zakupów" widoczny gdy plan niepusty', async ({ page, baseURL }) => {
