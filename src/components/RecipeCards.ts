@@ -214,8 +214,8 @@ function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): st
   `;
 
   const image = recipe.image
-    ? `<img src="${recipe.image}" alt="" class="w-full h-full object-cover" loading="${isNext ? 'lazy' : 'eager'}" onerror="this.style.display='none'" />`
-    : `<div class="w-full h-full flex items-center justify-center text-na-emalii-2">🍽️</div>`;
+    ? `<img src="${recipe.image}" alt="" class="w-full h-full object-cover pointer-events-none select-none" draggable="false" loading="${isNext ? 'lazy' : 'eager'}" onerror="this.style.display='none'" />`
+    : `<div class="w-full h-full flex items-center justify-center text-na-emalii-2 pointer-events-none">🍽️</div>`;
 
   const detailsPanel = `
     <!-- Panel szczegółów: zdjęcie jako tło z półprzezroczystą warstwą + blur -->
@@ -264,8 +264,8 @@ function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): st
       <!-- Zdjęcie na całą kartę -->
       <div class="absolute inset-0">
         ${image}
-        <!-- Gradient czytelności -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none"></div>
+        <!-- Gradient czytelności: mocny u dołu, lekki u góry -->
+        <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 28%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.25) 100%)"></div>
         <!-- Metadane nad gradientem (widoczne w zwiniętym) -->
         <div class="absolute bottom-0 left-0 right-0 p-4 ${showDetails ? 'hidden' : ''}">
           <h2 class="text-xl font-extrabold text-white leading-tight mb-1">
