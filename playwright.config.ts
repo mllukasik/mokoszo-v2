@@ -7,35 +7,41 @@ const SERVER_URL = `http://localhost:${PORT}${BASE_PATH}`;
 
 export default defineConfig({
   testDir: './e2e',
+  timeout: 30_000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: process.env.CI ? [['github'], ['html', { outputFolder: 'playwright-report' }]] : 'list',
+
   use: {
-    // baseURL zawiera base path — page.goto('/') trafi na właściwą stronę
+    // baseURL zawiera base path — nawigacja helperem goto() w testach
     baseURL: SERVER_URL,
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
+
+  // Zbuduj przed startem serwera (wymagane przez preview w e2e)
+  webServer: {
+    command: 'npm run build && npm run preview -- --port 4321',
+    url: `${SERVER_URL}/`,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
+
   projects: [
     {
       name: 'Mobile Chrome',
       use: {
-        ...devices['Pixel 5'],
+        ...devices['Pixel 5'], // 360px — podstawowy viewport projektu
       },
     },
     {
       name: 'Desktop Chrome',
       use: {
         ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 800 },
       },
     },
   ],
-  webServer: {
-    command: 'npm run build && npm run preview',
-    // url do health-check — budowany dynamicznie, bez hardcoded ścieżki
-    url: `${SERVER_URL}/`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
 });

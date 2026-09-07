@@ -14,6 +14,14 @@ const recipesData = allRecipes.map((entry) => ({
 }));
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const slotFilters = [
+  { id: 'sniadanie', label: 'Śniadanie' },
+  { id: 'drugie-sniadanie', label: 'Drugie śniadanie' },
+  { id: 'obiad', label: 'Obiad' },
+  { id: 'kolacja', label: 'Kolacja' },
+  { id: 'deser', label: 'Deser' },
+];
 ---
 <App title="Przepisy — Jutro jem" currentNav="przepisy">
   <header class="bg-emalia-900 text-na-emalii px-4 py-8 md:px-8 md:py-12">
@@ -34,56 +42,68 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   </header>
 
   <div class="p-4 space-y-6">
+    <div
+      data-testid="storage-notice"
+      class="bg-biel border-l-4 border-kurkuma rounded-r-m p-4 text-[14px] text-ink"
+    >
+      <p><strong>Plan zostaje w tej przeglądarce.</strong> Nie wysyłamy go nigdzie — znajdziesz go tu po powrocie.</p>
+      <button
+        type="button"
+        aria-label="Zamknij komunikat"
+        data-testid="close-storage-notice"
+        class="mt-2 inline-flex items-center min-h-touch px-4 py-2 rounded-m border border-kreska font-semibold"
+      >
+        Rozumiem
+      </button>
+    </div>
+
+    <section aria-label="Filtry przepisów">
+      <h2 class="text-xl font-bold text-ink mb-3">Filtry</h2>
+      <div class="flex flex-wrap gap-2" data-testid="slot-filters">
+        {slotFilters.map((f) => (
+          <button
+            type="button"
+            data-slot-filter={f.id}
+            aria-pressed="false"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                   text-[13px] font-semibold border border-kreska bg-biel text-ink
+                   min-h-touch cursor-pointer"
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+      <div class="mt-2 flex items-center gap-3">
+        <button
+          type="button"
+          data-testid="clear-filters"
+          hidden
+          class="inline-flex items-center min-h-touch text-emalia-500 font-semibold underline"
+        >
+          wyczyść filtry
+        </button>
+        <p data-testid="filter-count" class="text-sm text-ink-2" aria-live="polite"></p>
+      </div>
+      <p data-testid="filter-empty" hidden class="mt-2 text-[14px] text-ink">
+        Nic tu nie ma dla wybranych filtrów. Zmień filtry albo
+        <button type="button" data-testid="clear-filters-empty" class="underline font-semibold text-emalia-500">wyczyść filtry</button>.
+      </p>
+    </section>
+
     <section>
       <h2 class="text-xl font-bold text-ink mb-3">Przepisy</h2>
-      <p class="text-sm font-medium text-ink-2">Wkrótce: katalog przepisów z filtrami.</p>
-      <ul class="mt-3 space-y-2">
+      <ul data-testid="recipe-list" class="mt-3 space-y-2">
         {allRecipes.map((entry) => (
-          <li>
+          <li
+            data-slots={(entry.data.slots as string[]).join(',')}
+            data-time={String(entry.data.time_minutes)}
+          >
             <a href={`${base}/przepis/${entry.slug}`} class="inline-flex items-center min-h-touch text-emalia-500 font-semibold">
               {entry.data.title}
             </a>
           </li>
         ))}
       </ul>
-    </section>
-
-    <section>
-      <h2 class="text-xl font-bold text-ink mb-3">Przykładowe filtry</h2>
-      <div class="flex flex-wrap gap-2">
-        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
-                       text-[13px] font-semibold border border-kreska bg-biel text-ink
-                       min-h-touch cursor-pointer">
-          Śniadanie
-        </button>
-        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
-                       text-[13px] font-semibold bg-emalia-900 text-na-emalii
-                       min-h-touch cursor-pointer">
-          Obiad
-          <span aria-hidden="true">✕</span>
-          <span class="sr-only">zdejmij filtr obiad</span>
-        </button>
-        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
-                       text-[13px] font-semibold border border-kreska bg-biel text-ink
-                       min-h-touch cursor-pointer">
-          Kolacja
-        </button>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="text-xl font-bold text-ink mb-3">Komunikaty</h2>
-      <div class="space-y-3">
-        <div class="bg-biel border-l-4 border-kurkuma rounded-r-m p-4 text-[14px]">
-          <strong>Wskazówka:</strong> Wybierz przepisy, które chcesz ugotować.
-        </div>
-        <div class="bg-biel border-l-4 border-tak rounded-r-m p-4 text-[14px]">
-          Plan na dziś gotowy!
-        </div>
-        <div class="bg-biel border-l-4 border-nie rounded-r-m p-4 text-[14px]">
-          Nie masz jeszcze żadnych przepisów w planie.
-        </div>
-      </div>
     </section>
   </div>
 
@@ -96,5 +116,116 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     if (start instanceof HTMLAnchorElement) {
       start.href = buildWybieramUrl(todayISO());
     }
+
+    // ——— Komunikat o localStorage (pierwsze wejście) ———
+    const NOTICE_KEY = 'jutrojem:seen-notice';
+    const notice = document.querySelector('[data-testid="storage-notice"]');
+    const closeNotice = document.querySelector('[data-testid="close-storage-notice"]');
+    try {
+      if (localStorage.getItem(NOTICE_KEY)) {
+        notice?.remove();
+      }
+    } catch { /* brak localStorage — zostaw komunikat */ }
+    closeNotice?.addEventListener('click', () => {
+      try { localStorage.setItem(NOTICE_KEY, '1'); } catch { /* ignoruj */ }
+      notice?.remove();
+    });
+
+    // ——— Filtry wielokrotne (OR) + czas z URL ———
+    const list = document.querySelector('[data-testid="recipe-list"]');
+    const items = list ? [...list.querySelectorAll('li')] : [];
+    const filterButtons = [...document.querySelectorAll('[data-slot-filter]')];
+    const clearBtn = document.querySelector('[data-testid="clear-filters"]');
+    const clearEmptyBtn = document.querySelector('[data-testid="clear-filters-empty"]');
+    const countEl = document.querySelector('[data-testid="filter-count"]');
+    const emptyEl = document.querySelector('[data-testid="filter-empty"]');
+
+    function readStateFromUrl(): { slots: string[]; czas: number | null } {
+      const params = new URLSearchParams(window.location.search);
+      const rawSlots = params.getAll('slot').flatMap((v) => v.split(',')).filter(Boolean);
+      const rawCzas = params.get('czas');
+      const czas = rawCzas !== null && /^\d+$/.test(rawCzas) ? Number(rawCzas) : null;
+      return { slots: [...new Set(rawSlots)], czas };
+    }
+
+    function writeStateToUrl(slots: string[], czas: number | null) {
+      const params = new URLSearchParams(window.location.search);
+      params.delete('slot');
+      for (const s of slots) params.append('slot', s);
+      if (czas !== null) params.set('czas', String(czas));
+      const query = params.toString();
+      const next = `${window.location.pathname}${query ? `?${query}` : ''}`;
+      window.history.replaceState(null, '', next);
+    }
+
+    function labelFor(slotId: string): string {
+      const btn = filterButtons.find((b) => b.getAttribute('data-slot-filter') === slotId);
+      return btn?.textContent?.trim() ?? slotId;
+    }
+
+    function applyFilters(slots: string[], czas: number | null) {
+      let visible = 0;
+      for (const li of items) {
+        const liSlots = (li.getAttribute('data-slots') ?? '').split(',').filter(Boolean);
+        const liTime = Number(li.getAttribute('data-time') ?? '0');
+        const slotOk = slots.length === 0 || slots.some((s) => liSlots.includes(s));
+        const timeOk = czas === null || liTime <= czas;
+        const show = slotOk && timeOk;
+        li.hidden = !show;
+        if (show) visible += 1;
+      }
+      for (const btn of filterButtons) {
+        const id = btn.getAttribute('data-slot-filter') ?? '';
+        const active = slots.includes(id);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        btn.classList.toggle('bg-emalia-900', active);
+        btn.classList.toggle('text-na-emalii', active);
+        btn.classList.toggle('bg-biel', !active);
+        btn.classList.toggle('text-ink', !active);
+      }
+      const hasFilters = slots.length > 0 || czas !== null;
+      if (clearBtn instanceof HTMLElement) clearBtn.hidden = !hasFilters;
+      if (countEl) {
+        countEl.textContent = hasFilters
+          ? `Pokazano ${visible} z ${items.length} przepisów`
+          : '';
+      }
+      if (emptyEl instanceof HTMLElement) {
+        const showEmpty = visible === 0;
+        emptyEl.hidden = !showEmpty;
+        if (showEmpty) {
+          const names = slots.map(labelFor).join(', ');
+          const timePart = czas !== null ? ` do ${czas} minut` : '';
+          emptyEl.childNodes[0].textContent =
+            `Nic tu nie ma dla wybranych filtrów${names ? `: ${names}` : ''}${timePart}. Zmień filtry albo `;
+        }
+      }
+    }
+
+    let state = readStateFromUrl();
+    applyFilters(state.slots, state.czas);
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-slot-filter') ?? '';
+        state = readStateFromUrl();
+        const next = state.slots.includes(id)
+          ? state.slots.filter((s) => s !== id)
+          : [...state.slots, id];
+        writeStateToUrl(next, state.czas);
+        state = readStateFromUrl();
+        applyFilters(state.slots, state.czas);
+      });
+    });
+
+    function clearFilters() {
+      const czas = readStateFromUrl().czas;
+      // Czas z URL zostaje (filtr URL-owy), czyścimy tylko sloty.
+      writeStateToUrl([], czas);
+      state = readStateFromUrl();
+      applyFilters(state.slots, state.czas);
+    }
+    clearBtn?.addEventListener('click', clearFilters);
+    clearEmptyBtn?.addEventListener('click', clearFilters);
   </script>
 </App>
