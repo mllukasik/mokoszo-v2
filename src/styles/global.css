@@ -93,4 +93,12 @@
   .shadow-cien-1 { box-shadow: var(--cien-1); }
   .shadow-cien-2 { box-shadow: var(--cien-2); }
   .shadow-cien-noc { box-shadow: var(--cien-noc); }
+
+  /* Krótkie podświetlenie slotu po powrocie z trybu wybierania (E-04 → E-03) */
+  .slot--just-updated {
+    outline: 3px solid var(--kurkuma);
+    outline-offset: 2px;
+    border-radius: 8px;
+    transition: outline-color 0.4s ease;
+  }
 }
