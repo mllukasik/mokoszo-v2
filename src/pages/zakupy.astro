@@ -20,13 +20,26 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <header class="sticky top-0 bg-porcelana/95 backdrop-blur px-4 py-3 border-b border-kreska">
     <h1 class="text-2xl font-ui font-bold text-ink">Lista zakupów</h1>
     <p class="text-sm text-ink-2">Dzień: <strong data-testid="shopping-date">…</strong></p>
+    <p data-testid="shopping-progress" class="text-sm font-semibold text-ink mt-1" aria-live="polite"></p>
   </header>
   <div class="p-4 max-w-2xl mx-auto">
-    <p class="text-ink-2 mb-4">Wkrótce: podsumowanie składników z planu.</p>
+    <div data-testid="shopping-empty" hidden>
+      <p class="text-ink-2 mb-4">Nic nie zaplanowano na ten dzień.</p>
+      <a
+        data-testid="goto-plan"
+        href={`${base}/plan`}
+        class="inline-flex items-center min-h-touch text-emalia-500 font-semibold"
+      >
+        Idź do planu
+      </a>
+    </div>
+
+    <ul data-testid="shopping-list" class="space-y-2"></ul>
+
     <a
       data-testid="back-to-plan"
       href={`${base}/plan`}
-      class="inline-flex items-center min-h-touch text-emalia-500 font-semibold"
+      class="mt-6 inline-flex items-center min-h-touch text-emalia-500 font-semibold"
     >
       Wróć do planu
     </a>
@@ -35,16 +48,117 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <script id="recipes-data" type="application/json" set:html={JSON.stringify(recipesData)} />
 
   <script>
-    import { getDateParam, buildPlanUrl } from '../scripts/router.ts';
+    import { getDateParam, buildPlanUrl, getRecipesData } from '../scripts/router.ts';
 
     const date = getDateParam();
     document.querySelectorAll('[data-testid="shopping-date"]').forEach((el) => {
       el.textContent = date;
     });
 
-    const back = document.querySelector('[data-testid="back-to-plan"]');
-    if (back instanceof HTMLAnchorElement) {
-      back.href = buildPlanUrl(date);
+    for (const testId of ['back-to-plan', 'goto-plan']) {
+      const link = document.querySelector(`[data-testid="${testId}"]`);
+      if (link instanceof HTMLAnchorElement) {
+        link.href = buildPlanUrl(date);
+      }
+    }
+
+    // ——— Lista zakupów z planu (zalążek E-06; pełne sumowanie w kroku 2.2) ———
+    interface StoredDish { recipeSlug: string; addedAt: number }
+    interface StoredSlot { id: string; name: string; label: string; dishes: StoredDish[] }
+    interface StoredPlan { date: string; slots: StoredSlot[] }
+
+    const CHECKED_KEY = `jutrojem:checked:${date}`;
+
+    function readPlan(): StoredPlan | null {
+      try {
+        const raw = localStorage.getItem('jutrojem:plan');
+        if (!raw) return null;
+        const plan = JSON.parse(raw) as StoredPlan;
+        return plan && Array.isArray(plan.slots) ? plan : null;
+      } catch { return null; }
+    }
+
+    function readChecked(): Record<string, boolean> {
+      try {
+        const raw = localStorage.getItem(CHECKED_KEY);
+        return raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
+      } catch { return {}; }
+    }
+
+    function saveChecked(checked: Record<string, boolean>) {
+      try { localStorage.setItem(CHECKED_KEY, JSON.stringify(checked)); } catch { /* ignoruj */ }
+    }
+
+    const plan = readPlan();
+    const dishes = plan && plan.date === date
+      ? plan.slots.flatMap((s) => s.dishes)
+      : [];
+
+    const emptyBox = document.querySelector('[data-testid="shopping-empty"]');
+    const listEl = document.querySelector('[data-testid="shopping-list"]');
+    const progressEl = document.querySelector('[data-testid="shopping-progress"]');
+
+    if (dishes.length === 0) {
+      if (emptyBox instanceof HTMLElement) emptyBox.hidden = false;
+      if (listEl instanceof HTMLElement) listEl.hidden = true;
+      if (progressEl) progressEl.textContent = '';
+    } else {
+      if (emptyBox instanceof HTMLElement) emptyBox.hidden = true;
+
+      const recipes = getRecipesData();
+      const bySlug = new Map(recipes.map((r) => [r.slug, r]));
+
+      // Grupowanie po slug + jednostka (ten sam składnik z kilku dań sumujemy).
+      const grouped = new Map<string, { slug: string; name: string; amount: number; unit: string }>();
+      for (const dish of dishes) {
+        const recipe = bySlug.get(dish.recipeSlug);
+        if (!recipe) continue;
+        for (const ing of recipe.ingredients) {
+          const key = `${ing.slug}|||${ing.unit}`;
+          const prev = grouped.get(key);
+          if (prev) prev.amount += ing.amount;
+          else grouped.set(key, { slug: ing.slug, name: ing.name, amount: ing.amount, unit: ing.unit });
+        }
+      }
+
+      const checked = readChecked();
+      const entries = [...grouped.values()];
+
+      function renderProgress() {
+        const total = entries.length;
+        const done = entries.filter((e) => checked[`${e.slug}|||${e.unit}`]).length;
+        if (progressEl) progressEl.textContent = total > 0 ? `${done} z ${total} odhaczone` : '';
+      }
+
+      if (listEl) {
+        for (const entry of entries) {
+          const key = `${entry.slug}|||${entry.unit}`;
+          const li = document.createElement('li');
+
+          const label = document.createElement('label');
+          label.className = 'flex items-center gap-3 bg-biel rounded-m p-3 min-h-touch cursor-pointer';
+
+          const box = document.createElement('input');
+          box.type = 'checkbox';
+          box.checked = checked[key] === true;
+          box.className = 'w-6 h-6 accent-emalia-900';
+          box.addEventListener('change', () => {
+            checked[key] = box.checked;
+            saveChecked(checked);
+            renderProgress();
+          });
+
+          const text = document.createElement('span');
+          text.className = 'text-[14px] text-ink';
+          text.textContent = `${entry.name} — ${entry.amount} ${entry.unit}`;
+
+          label.appendChild(box);
+          label.appendChild(text);
+          li.appendChild(label);
+          listEl.appendChild(li);
+        }
+      }
+      renderProgress();
     }
   </script>
 </App>
