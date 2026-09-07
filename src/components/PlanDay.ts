@@ -271,7 +271,7 @@ function renderDish(recipeSlug: string, slotId: string): string {
         ? `<img src="${recipe.image}" alt="" class="w-10 h-10 rounded-s object-cover flex-shrink-0" />`
         : `<div class="w-10 h-10 rounded-s bg-kreska flex-shrink-0"></div>`
       }
-      <a href="${base}/przepis/${recipeSlug}" class="flex-1 text-[14px] font-semibold text-ink hover:text-emalia-500">
+      <a href="${base}/przepis/${recipeSlug}" class="flex-1 min-h-touch flex items-center text-[14px] font-semibold text-ink hover:text-emalia-500">
         ${recipe.title}
       </a>
       <span class="text-[12.5px] text-ink-2">${recipe.calories} kcal</span>
@@ -280,7 +280,7 @@ function renderDish(recipeSlug: string, slotId: string): string {
         <button
           data-slot-id="${slotId}"
           data-recipe-slug="${recipeSlug}"
-          class="btn-dish-menu w-10 h-10 flex items-center justify-center rounded-s text-ink-2 hover:bg-kreska"
+          class="btn-dish-menu w-12 h-12 min-w-touch min-h-touch flex items-center justify-center rounded-s text-ink-2 hover:bg-kreska"
           aria-label="Opcje dania ${recipe.title}"
         >
           ⋯
@@ -330,19 +330,19 @@ function showDishMenu(slotId: string, recipeSlug: string) {
       <div class="space-y-1">
         <a
           href="${base}/wybieram?date=${currentDate}&slot=${slotId}&replace=${recipeSlug}"
-          class="flex items-center gap-3 py-3 px-2 rounded-m text-[15px] font-semibold hover:bg-porcelana w-full"
+          class="flex items-center gap-3 py-3 px-2 rounded-m text-[15px] font-semibold hover:bg-porcelana w-full min-h-touch"
         >
           Podmień przepis
         </a>
         <button
           id="overlay-remove"
-          class="flex items-center gap-3 py-3 px-2 rounded-m text-[15px] font-semibold text-nie hover:bg-nie-tint w-full"
+          class="flex items-center gap-3 py-3 px-2 rounded-m text-[15px] font-semibold text-nie hover:bg-nie-tint w-full min-h-touch"
         >
           Usuń z planu
         </button>
         <button
           id="overlay-close"
-          class="flex items-center gap-3 py-3 px-2 rounded-m text-[15px] text-ink-2 hover:bg-porcelana w-full"
+          class="flex items-center gap-3 py-3 px-2 rounded-m text-[15px] text-ink-2 hover:bg-porcelana w-full min-h-touch"
         >
           Anuluj
         </button>
@@ -428,12 +428,12 @@ function showAddSlotDialog() {
       <p class="font-bold text-[16px] mb-4">Dodaj posiłek do tego dnia</p>
       <div class="space-y-1">
         ${available.map(s => `
-          <button data-slot="${s}" class="btn-add-slot-option flex items-center py-3 px-2 rounded-m text-[15px] font-semibold hover:bg-porcelana w-full">
+          <button data-slot="${s}" class="btn-add-slot-option flex items-center py-3 px-2 rounded-m text-[15px] font-semibold hover:bg-porcelana w-full min-h-touch">
             ${SLOT_LABELS[s]}
           </button>
         `).join('')}
         ${available.length === 0 ? '<p class="text-ink-2 py-3">Wszystkie posiłki już dodane.</p>' : ''}
-        <button id="overlay-close2" class="py-3 px-2 text-[14px] text-ink-2 hover:bg-porcelana w-full rounded-m">Anuluj</button>
+        <button id="overlay-close2" class="py-3 px-2 text-[14px] text-ink-2 hover:bg-porcelana w-full rounded-m min-h-touch">Anuluj</button>
       </div>
     </div>
   `;
