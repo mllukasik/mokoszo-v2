@@ -218,8 +218,8 @@ function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): st
     : `<div class="w-full h-full flex items-center justify-center text-na-emalii-2 pointer-events-none">🍽️</div>`;
 
   const detailsPanel = `
-    <!-- Panel szczegółów: zdjęcie jako tło z półprzezroczystą warstwą + blur -->
-    <div class="absolute inset-0 bg-emalia-900/80 backdrop-blur-sm overflow-y-auto" data-details-panel ${showDetails ? '' : 'hidden'}>
+    <!-- Panel szczegółów: mocna ciemna warstwa + blur -->
+    <div class="absolute inset-0 overflow-y-auto" data-details-panel ${showDetails ? '' : 'hidden'} style="background: rgba(10,10,14,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px)">
       <div class="p-5 font-prose text-[15px] text-na-emalii leading-relaxed">
         <div class="flex items-start justify-between mb-4">
           <h2 class="text-xl font-extrabold text-white leading-tight pr-4">
