@@ -29,8 +29,12 @@ test.describe('E-08: Stany brzegowe', () => {
   });
 
   test('pula wyczerpana z filtrem — powrót do pełnej puli', async ({ page, baseURL }) => {
-    // Jedyny przepis ze zdjęciem to obiad/kolacja — filtr "deser" daje pustą pulę.
+    // Filtr "deser" ma 2 przepisy (sernik, french toast) — po odrzuceniu obu widać stan pusty.
     await goto(page, baseURL, '/wybieram?date=2026-09-05&slot=deser');
+    const reject = page.getByRole('button', { name: 'Nie dziś' });
+    for (let i = 0; i < 2; i++) {
+      await reject.click();
+    }
     await expect(page.getByText(/Obejrzałeś wszystkie/)).toBeVisible();
     await page.locator('#btn-remove-filter-empty').click();
     // Po zdjęciu filtra widać kartę przepisu
@@ -40,7 +44,12 @@ test.describe('E-08: Stany brzegowe', () => {
   test('pula wyczerpana bez filtra — od nowa lub lista', async ({ page, baseURL }) => {
     await goto(page, baseURL, '/wybieram?date=2026-09-05');
     await expect(page.locator('#card-current')).toBeVisible();
-    await page.getByRole('button', { name: 'Nie dziś' }).click();
+    // Odrzucaj aż wyczerpiemy całą pulę
+    for (let i = 0; i < 11; i++) {
+      const hasCard = await page.locator('#card-current').isVisible().catch(() => false);
+      if (!hasCard) break;
+      await page.getByRole('button', { name: 'Nie dziś' }).click();
+    }
     await expect(page.getByText(/To wszystkie/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Zacznij od nowa' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Przeglądaj listę' })).toBeVisible();
