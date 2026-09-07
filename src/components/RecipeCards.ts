@@ -10,6 +10,8 @@ interface RecipeCardData {
   calories: number;
   slots: SlotTag[];
   ingredients: Array<{ name: string; amount: number; unit: string }>;
+  description?: string;
+  steps?: string[];
 }
 
 const VALID_SLOT_TAGS: SlotTag[] = ['sniadanie', 'drugie-sniadanie', 'obiad', 'kolacja', 'deser'];
@@ -232,10 +234,17 @@ function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): st
       </div>
       <!-- Treść przewijana (FR-02) -->
       <div class="overflow-y-auto max-h-[200px] p-4 font-prose text-[15px] text-na-emalii leading-relaxed">
+        ${recipe.description ? `<p class="mb-4">${recipe.description}</p>` : ''}
         <h3 class="font-ui font-bold text-[13px] uppercase tracking-wide text-na-emalii-2 mb-2">Składniki</h3>
         <ul class="space-y-1 mb-4">
           ${recipe.ingredients.map((i) => `<li>${i.name} — ${i.amount} ${i.unit}</li>`).join('')}
         </ul>
+        ${recipe.steps && recipe.steps.length > 0 ? `
+          <h3 class="font-ui font-bold text-[13px] uppercase tracking-wide text-na-emalii-2 mb-2">Przygotowanie</h3>
+          <ol class="list-decimal pl-5 space-y-1">
+            ${recipe.steps.map((s) => `<li>${s}</li>`).join('')}
+          </ol>
+        ` : ''}
       </div>
     </article>
   `;

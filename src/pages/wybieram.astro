@@ -6,6 +6,28 @@ import Base from '../layouts/Base.astro';
 const allRecipes = await getCollection('recipes');
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const withBase = (path: string) => (base ? `${base}${path}` : path);
+
+// Fragmenty treści Markdown: opis (pierwszy akapit przed nagłówkami) i kroki "Przygotowanie"
+function extractBody(body: string) {
+  const lines = body.split('\n').map((l) => l.trim());
+  const description = lines.find((l) => l.length > 0 && !l.startsWith('#') && !l.startsWith('-'));
+  const steps: string[] = [];
+  let inSteps = false;
+  for (const line of lines) {
+    if (line.startsWith('##')) {
+      inSteps = true;
+      continue;
+    }
+    if (inSteps && /^\d+\./.test(line)) {
+      steps.push(line.replace(/^\d+\.\s*/, ''));
+    }
+  }
+  return {
+    description: (description ?? '').replace(/\s+/g, ' ').slice(0, 160),
+    steps,
+  };
+}
+
 const recipesJson = JSON.stringify(
   allRecipes
     .filter((e) => e.data.image) // tylko przepisy ze zdjęciem (FR-01)
@@ -17,6 +39,7 @@ const recipesJson = JSON.stringify(
       calories: e.data.calories,
       slots: e.data.slots,
       ingredients: e.data.ingredients,
+      ...extractBody(e.body),
     })),
 );
 ---
