@@ -679,21 +679,10 @@ function attachEvents() {
   document.getElementById('btn-remove-filter-empty')?.addEventListener('click', removeFilter);
   document.getElementById('btn-restart')?.addEventListener('click', restart);
 
-  // Zamknięcie szczegółów
+// Zamknięcie szczegółów
   document.querySelector('[data-close-details]')?.addEventListener('click', () => {
     toggleDetails();
   });
-
-  // Tap/kliknięcie na karcie = otwórz/zamknij szczegóły
-  // Używamy capture phase, by łapać kliknięcia w zdjęciu/tagach przed swipe handlerami
-  document.getElementById('card-current')?.addEventListener('click', (e) => {
-    if (confirmationVisible) return;
-    // Ignoruj kliknięcia w przycisk zamknięcia (ma własny handler)
-    if ((e.target as HTMLElement).closest('[data-close-details]')) return;
-    // Kliknięcie w dowolnym miejscu karty (zdjęcie, tagi, tytuł, meta) otwiera/zamyka
-    if (!detailsOpen) openDetails();
-    else toggleDetails();
-  }, true); // capture phase
 
   // Gesty
   attachSwipeEvents();
