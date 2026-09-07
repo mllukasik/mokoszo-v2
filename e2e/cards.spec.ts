@@ -18,11 +18,30 @@ test.describe('E-04: Tryb wybierania', () => {
     await expect(page.locator('article[aria-label]').first()).toBeVisible();
   });
 
-  test('karta pokazuje opis i składniki (również wąskie viewport)', async ({ page }) => {
+  test('karta pokazuje opis i składniki po tapnięciu (również wąskie viewport)', async ({ page }) => {
     const card = page.locator('#card-current');
     await card.waitFor();
+    // Na początku szczegóły są zwinięte — Składniki nie widoczne
+    await expect(card.getByText('Składniki')).not.toBeVisible();
+    // Użyj klawiatury (Enter) by otworzyć szczegóły
+    await page.focus('#card-current');
+    await page.keyboard.press('Enter');
     await expect(card.getByText('Składniki')).toBeVisible();
-    await expect(card.locator('p, h3').first()).toBeVisible();
+    // Sprawdź, że treść w panelu szczegółów jest widoczna (np. opis przepisu)
+    await expect(card.locator('[data-details-panel] p').first()).toBeVisible();
+  });
+
+  test('tap otwiera i zamyka szczegóły', async ({ page }) => {
+    const card = page.locator('#card-current');
+    await card.waitFor();
+    await expect(card.getByText('Składniki')).not.toBeVisible();
+    // Otwórz Enterem
+    await page.focus('#card-current');
+    await page.keyboard.press('Enter');
+    await expect(card.getByText('Składniki')).toBeVisible();
+    // Zamknij Escape
+    await page.keyboard.press('Escape');
+    await expect(card.getByText('Składniki')).not.toBeVisible();
   });
 
   test('przycisk "Nie dziś" odrzuca kartę i pokazuje następną', async ({ page }) => {
@@ -93,8 +112,6 @@ test.describe('E-04: Tryb wybierania', () => {
     const endX = box.x + box.width * 0.5;
     const midY = box.y + box.height / 3;
 
-    // Tap tylko tam, gdzie kontekst ma dotyk (Mobile Chrome).
-    await page.touchscreen.tap(startX, midY).catch(() => {});
     await page.mouse.move(startX, midY);
     await page.mouse.down();
     await page.mouse.move(endX, midY, { steps: 10 });

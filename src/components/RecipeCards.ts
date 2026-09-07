@@ -31,8 +31,13 @@ let history: string[] = []; // do cofania decyzji (FR-05)
 let confirmationVisible = false;
 let keyboardAttached = false;
 let keyboardHintDismissed = false;
+let detailsOpen = false; // szczegóły przepisu otwarte (tap na karcie)
 
 // ——— Init ———
+
+function resetDetailsOpen() {
+  detailsOpen = false;
+}
 
 function init() {
   // Odczytaj dane przepisów wbudowane w stronę
@@ -65,6 +70,11 @@ function init() {
   renderUI();
 }
 
+function resetDetailsOpenAndRender() {
+  detailsOpen = false;
+  renderUI();
+}
+
 function getTodayDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -79,6 +89,7 @@ function applyFilter() {
   }
   currentIndex = 0;
   history = [];
+  detailsOpen = false;
 }
 
 function removeFilter() {
@@ -192,8 +203,10 @@ function renderCardStack(): string {
 
 function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): string {
   const isNext = role === 'next';
+  const isCurrent = role === 'current';
+  const showDetails = isCurrent && detailsOpen;
   const baseClasses = `
-    absolute inset-0 rounded-karta overflow-hidden bg-emalia-800 flex flex-col
+    absolute inset-0 rounded-karta overflow-hidden bg-emalia-800
     ${isNext ? 'scale-[0.95] opacity-60 pointer-events-none' : 'cursor-grab active:cursor-grabbing shadow-cien-noc'}
   `;
 
@@ -201,20 +214,57 @@ function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): st
     ? `<img src="${recipe.image}" alt="" class="w-full h-full object-cover" loading="${isNext ? 'lazy' : 'eager'}" onerror="this.style.display='none'" />`
     : `<div class="w-full h-full flex items-center justify-center text-na-emalii-2">🍽️</div>`;
 
+  const detailsPanel = `
+    <!-- Panel szczegółów: zdjęcie jako tło z półprzezroczystą warstwą + blur -->
+    <div class="absolute inset-0 bg-emalia-900/80 backdrop-blur-sm overflow-y-auto" data-details-panel ${showDetails ? '' : 'hidden'}>
+      <div class="p-5 font-prose text-[15px] text-na-emalii leading-relaxed">
+        <div class="flex items-start justify-between mb-4">
+          <h2 class="text-xl font-extrabold text-white leading-tight pr-4">
+            ${recipe.title}
+          </h2>
+          <button
+            type="button"
+            data-close-details
+            class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+            aria-label="Zamknij szczegóły"
+          >
+            ✕
+          </button>
+        </div>
+        <p class="text-[13px] text-white/70 mb-4">
+          ${recipe.timeMinutes} min · ${recipe.calories} kcal
+          · ${recipe.slots.map((s) => SLOT_LABELS[s as SlotTag]).join(', ')}
+        </p>
+        ${recipe.description ? `<p class="mb-4">${recipe.description}</p>` : ''}
+        <h3 class="font-ui font-bold text-[13px] uppercase tracking-wide text-na-emalii-2 mb-2">Składniki</h3>
+        <ul class="space-y-1 mb-4">
+          ${recipe.ingredients.map((i) => `<li>${i.name} — ${i.amount} ${i.unit}</li>`).join('')}
+        </ul>
+        ${recipe.steps && recipe.steps.length > 0 ? `
+          <h3 class="font-ui font-bold text-[13px] uppercase tracking-wide text-na-emalii-2 mb-2">Przygotowanie</h3>
+          <ol class="list-decimal pl-5 space-y-1">
+            ${recipe.steps.map((s) => `<li>${s}</li>`).join('')}
+          </ol>
+        ` : ''}
+      </div>
+    </div>
+  `;
+
   return `
     <article
-      id="${role === 'current' ? 'card-current' : 'card-next'}"
+      id="${isCurrent ? 'card-current' : 'card-next'}"
       class="${baseClasses}"
-      ${role === 'current' ? 'role="article"' : ''}
+      ${isCurrent ? 'role="article"' : ''}
       aria-label="${recipe.title}"
+      ${isCurrent ? `aria-expanded="${detailsOpen}"` : ''}
     >
-      <!-- Zdjęcie: 52% wysokości karty (wg E-04), elastyczne na każdym viewporcie -->
-      <div class="relative flex-none" style="height: 52%; min-height: 180px;">
+      <!-- Zdjęcie na całą kartę -->
+      <div class="absolute inset-0">
         ${image}
         <!-- Gradient czytelności -->
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none"></div>
-        <!-- Metadane nad gradientem -->
-        <div class="absolute bottom-0 left-0 right-0 p-4">
+        <!-- Metadane nad gradientem (widoczne w zwiniętym) -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 ${showDetails ? 'hidden' : ''}">
           <h2 class="text-xl font-extrabold text-white leading-tight mb-1">
             ${recipe.title}
           </h2>
@@ -232,20 +282,7 @@ function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): st
           <span class="text-4xl font-black text-nie-tint rotate-[20deg]">Nie dziś</span>
         </div>
       </div>
-      <!-- Treść przewijana (FR-02) — wypełnia resztę karty -->
-      <div class="flex-1 overflow-y-auto p-4 font-prose text-[15px] text-na-emalii leading-relaxed min-h-0">
-        ${recipe.description ? `<p class="mb-4">${recipe.description}</p>` : ''}
-        <h3 class="font-ui font-bold text-[13px] uppercase tracking-wide text-na-emalii-2 mb-2">Składniki</h3>
-        <ul class="space-y-1 mb-4">
-          ${recipe.ingredients.map((i) => `<li>${i.name} — ${i.amount} ${i.unit}</li>`).join('')}
-        </ul>
-        ${recipe.steps && recipe.steps.length > 0 ? `
-          <h3 class="font-ui font-bold text-[13px] uppercase tracking-wide text-na-emalii-2 mb-2">Przygotowanie</h3>
-          <ol class="list-decimal pl-5 space-y-1">
-            ${recipe.steps.map((s) => `<li>${s}</li>`).join('')}
-          </ol>
-        ` : ''}
-      </div>
+      ${detailsPanel}
     </article>
   `;
 }
@@ -346,6 +383,7 @@ function decide(accepted: boolean) {
   if (accepted) {
     acceptRecipe(recipe);
   } else {
+    detailsOpen = false;
     history.push(recipe.slug);
     currentIndex++;
     renderUI();
@@ -405,6 +443,7 @@ function showConfirmation(message: string) {
   `;
 
   document.getElementById('btn-next-slot')?.addEventListener('click', () => {
+    detailsOpen = false;
     currentIndex++;
     renderUI();
   });
@@ -413,15 +452,34 @@ function showConfirmation(message: string) {
 function undoLastDecision() {
   if (confirmationVisible) return;
   if (history.length === 0) return;
+  detailsOpen = false;
   history.pop();
   currentIndex = Math.max(0, currentIndex - 1);
   renderUI();
 }
 
 function restart() {
+  detailsOpen = false;
   currentIndex = 0;
   history = [];
   renderUI();
+}
+
+// ——— Detale przepisu (tap to expand) ———
+
+function toggleDetails() {
+  detailsOpen = !detailsOpen;
+  const card = document.getElementById('card-current');
+  if (!card) return;
+  const panel = card.querySelector('[data-details-panel]') as HTMLElement | null;
+  const metaOverlay = card.querySelector('.absolute.bottom-0.left-0.right-0.p-4') as HTMLElement | null;
+  if (panel) {
+    panel.hidden = !detailsOpen;
+  }
+  if (metaOverlay) {
+    metaOverlay.hidden = detailsOpen;
+  }
+  card.setAttribute('aria-expanded', String(detailsOpen));
 }
 
 // ——— Gesty (swipe) — FR-03 ———
@@ -429,6 +487,7 @@ function restart() {
 // Decyzja tylko gdy ruch poziomy > 1.3x pionowy i > 7px.
 // Implementacja na Pointer Events: obejmuje dotyk i mysz,
 // a pionowe przewijanie pozostaje natywne (pointercancel = reset).
+// Tap (brak ruchu) przełącza szczegóły.
 
 function attachSwipeEvents() {
   const card = document.getElementById('card-current');
@@ -445,6 +504,8 @@ function attachSwipeEvents() {
 
   card.addEventListener('pointerdown', (e: PointerEvent) => {
     if (!e.isPrimary) return;
+    // Nie przechwytywać kliknięć w przycisk zamknięcia szczegółów
+    if ((e.target as HTMLElement).closest('[data-close-details]')) return;
     activePointerId = e.pointerId;
     startX = e.clientX;
     startY = e.clientY;
@@ -474,7 +535,15 @@ function attachSwipeEvents() {
     isDragging = false;
     activePointerId = null;
 
-    if (axisLocked === 'x') {
+    // Tap: brak osi (axisLocked === null) i minimalny ruch = toggle szczegółów
+    if (axisLocked === null) {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const moved = Math.hypot(dx, dy) < 10;
+      if (moved && !confirmationVisible) {
+        toggleDetails();
+      }
+    } else if (axisLocked === 'x') {
       const cardWidth = card.offsetWidth;
       const threshold = cardWidth * 0.28; // 28% szerokości (z dokumentacji)
 
@@ -546,6 +615,24 @@ function attachKeyboardEvents() {
   keyboardAttached = true;
 
   document.addEventListener('keydown', (e: KeyboardEvent) => {
+    // Otwieranie/zamykanie szczegółów: Enter, Space, Escape
+    if (detailsOpen && e.key === 'Escape') {
+      e.preventDefault();
+      toggleDetails();
+      return;
+    }
+    if (!detailsOpen && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      toggleDetails();
+      return;
+    }
+    if (detailsOpen && (e.key === 'Enter' || e.key === ' ')) {
+      // Gdy szczegóły otwarte, Enter/Space zamykają je
+      e.preventDefault();
+      toggleDetails();
+      return;
+    }
+
     if (['ArrowRight'].includes(e.key)) {
       e.preventDefault();
       decide(true);
@@ -583,6 +670,18 @@ function attachEvents() {
   document.getElementById('btn-remove-filter')?.addEventListener('click', removeFilter);
   document.getElementById('btn-remove-filter-empty')?.addEventListener('click', removeFilter);
   document.getElementById('btn-restart')?.addEventListener('click', restart);
+
+  // Zamknięcie szczegółów
+  document.querySelector('[data-close-details]')?.addEventListener('click', () => {
+    toggleDetails();
+  });
+
+  // Tap na karcie = otwórz/zamknij szczegóły (fallback dla click)
+  document.getElementById('card-current')?.addEventListener('click', (e) => {
+    // Ignoruj kliknięcia w przycisk zamknięcia (ma własny handler)
+    if ((e.target as HTMLElement).closest('[data-close-details]')) return;
+    if (!confirmationVisible) toggleDetails();
+  });
 
   // Gesty
   attachSwipeEvents();
