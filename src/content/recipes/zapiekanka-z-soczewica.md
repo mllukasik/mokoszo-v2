@@ -1,64 +1,65 @@
 ---
-title: Zapiekanka z soczewicą i warzywami
-description: Sycąca zapiekanka z czerwoną soczewicą, pomidorami i warzywami, idealna na obiad.
-image: zapiekanka-z-soczewica.jpg
-prepTime: 15
-cookTime: 35
-servings: 4
-tags: [wegetariańskie, bezglutenowe, obiad]
-slots: [obiad]
-kcalTotal: 340
+title: Zapiekanka z soczewicą i pieczarkami
+image: /images/zapiekanka-z-soczewica.jpg
+time_minutes: 45
+calories: 520
+servings: 2
+slots:
+  - obiad
+  - kolacja
+tags: []
 ingredients:
-  - id: soczewica-czerwona
+  - slug: soczewica-czerwona
+    name: Soczewica czerwona
     amount: 200
-  - id: pomidor-puszka
-    amount: 400
-  - id: marchewka
-    amount: 150
-  - id: cebula
-    amount: 100
-  - id: czosnek
-    amount: 10
-  - id: oliwa
-    amount: 30
-  - id: kurkuma
-    amount: 5
-  - id: kumin
-    amount: 5
-  - id: sol
-    amount: 5
-  - id: pieprz
+    unit: g
+  - slug: pieczarki
+    name: Pieczarki
+    amount: 300
+    unit: g
+  - slug: cebula
+    name: Cebula
+    amount: 1
+    unit: szt
+  - slug: czosnek
+    name: Czosnek
     amount: 2
+    unit: ząbek
+  - slug: passata
+    name: Passata pomidorowa
+    amount: 400
+    unit: g
+  - slug: papryka-czerwona
+    name: Papryka czerwona
+    amount: 1
+    unit: szt
+  - slug: ser-zolty
+    name: Ser żółty (tarty)
+    amount: 80
+    unit: g
+  - slug: oliwa
+    name: Oliwa z oliwek
+    amount: 2
+    unit: łyżka
+  - slug: sol
+    name: Sól
+    amount: 1
+    unit: szczypta
+  - slug: pieprz
+    name: Pieprz czarny
+    amount: 1
+    unit: szczypta
 ---
 
-## Składniki
-
-- 200 g czerwonej soczewicy
-- 400 g pomidorów z puszki
-- 150 g marchewki (ok. 2 średnie)
-- 1 średnia cebula
-- 3 ząbki czosnku
-- 2 łyżki oliwy z oliwek
-- 1 łyżeczka kurkumy
-- 1 łyżeczka kuminu
-- sól i pieprz do smaku
+Sycąca zapiekanka, w której soczewica zastępuje mięso mielone — bogata w białko,
+gotowa w 45 minut i doskonała następnego dnia na zimno.
 
 ## Przygotowanie
 
-1. **Rozgrzej piekarnik** do 190°C.
-
-2. **Przygotuj warzywa** — obierz i pokrój marchewkę w półksiężyce, cebulę w kosteczkę, czosnek drobno posiekaj.
-
-3. **Podsmaż bazę** — na głębokiej patelni rozgrzej oliwę, zeszklij cebulę (ok. 5 minut), dodaj czosnek i smaż jeszcze 1 minutę. Wsyp kurkumę i kumin, mieszaj przez 30 sekund.
-
-4. **Połącz składniki** — dodaj marchewkę, soczewicę i pomidory z puszki. Dopraw solą i pieprzem. Dolej 300 ml wody, wymieszaj.
-
-5. **Zapiekaj** — przelej do naczynia żaroodpornego, przykryj folią aluminiową i piecz 25 minut. Zdejmij folię i piecz kolejne 10 minut, aż wierzch się zarumieni.
-
-6. **Podawaj** gorącą, posypaną natką pietruszki (opcjonalnie).
-
-## Wskazówki
-
-- Soczewica nie wymaga namaczania — po prostu ją przepłucz.
-- Zapiekanka świetnie smakuje odgrzewana następnego dnia.
-- Możesz dodać garść szpinaku przed zapiekaniem.
+1. Ugotuj soczewicę w osolonej wodzie przez 15 minut, aż będzie miękka. Odcedź.
+2. Podsmaż posiekaną cebulę na oliwie przez 5 minut na złoto. Dodaj czosnek i smaż minutę.
+3. Dodaj pokrojoną w kostkę paprykę, smaż 3 minuty.
+4. Wrzuć pieczarki, smaż aż odparuje woda (ok. 5 minut).
+5. Dodaj passatę i soczewicę, dopraw solą i pieprzem, gotuj razem 5 minut.
+6. Przełóż do naczynia żaroodpornego, posyp tartym serem.
+7. Zapiekaj w 180°C przez 20 minut, aż ser się zrumieni.
