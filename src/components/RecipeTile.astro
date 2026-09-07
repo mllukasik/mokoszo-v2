@@ -7,7 +7,7 @@ export interface Props {
   tags?: string[];
 }
 const { slug, title, image, calories, tags = [] } = Astro.props;
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const imageSrc = image
   ? (image.startsWith('/') ? `${base}${image}` : `${base}/images/${image}`)
   : null;

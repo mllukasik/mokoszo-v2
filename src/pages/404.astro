@@ -1,6 +1,6 @@
 ---
 import App from '../layouts/App.astro';
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <App title="Strona nie istnieje — Jutro jem" currentNav="przepisy">
