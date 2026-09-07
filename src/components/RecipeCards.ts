@@ -491,20 +491,41 @@ function showReplacementDialog(
   });
 }
 
+function getNextSlot(): { id: string; name: SlotTag } | null {
+  const plan = loadPlan(currentDate);
+  if (!plan || !currentSlotId) return null;
+  const idx = plan.slots.findIndex((s) => s.id === currentSlotId);
+  if (idx === -1 || idx + 1 >= plan.slots.length) return null;
+  const next = plan.slots[idx + 1];
+  return { id: next.id, name: next.name };
+}
+
 function showConfirmation(message: string) {
   const mount = document.getElementById('cards-mount');
   if (!mount) return;
   confirmationVisible = true;
   deciding = false;
 
+  const nextSlot = getNextSlot();
+  const nextSlotLabel = nextSlot ? SLOT_LABELS[nextSlot.name] : null;
+  const nextSlotUrl = nextSlot
+    ? `${getBaseUrl()}/wybieram/?date=${currentDate}&slot=${nextSlot.id}`
+    : null;
+
   mount.innerHTML = `
     <div class="flex flex-col items-center justify-center min-h-dvh px-6 text-center gap-6">
       <div class="text-4xl">✓</div>
       <p class="text-na-emalii text-lg font-bold" aria-live="assertive">${message}</p>
       <div class="flex flex-col gap-3 w-full max-w-[280px]">
-        <button id="btn-next-slot" class="px-5 py-3 rounded-l bg-kurkuma text-kurkuma-tekst font-bold min-h-touch">
-          Zaplanuj kolejny posiłek
-        </button>
+        ${nextSlotUrl
+          ? `<a
+              href="${nextSlotUrl}"
+              class="px-5 py-3 rounded-l bg-kurkuma text-kurkuma-tekst font-bold min-h-touch flex items-center justify-center"
+            >
+              Zaplanuj ${nextSlotLabel?.toLowerCase() ?? 'kolejny posiłek'}
+            </a>`
+          : ''
+        }
         <a
           href="${getBaseUrl()}/plan?date=${currentDate}#slot-${currentSlotId}"
           class="px-5 py-3 rounded-l border border-white/30 text-na-emalii font-semibold min-h-touch flex items-center justify-center"
@@ -514,12 +535,6 @@ function showConfirmation(message: string) {
       </div>
     </div>
   `;
-
-  document.getElementById('btn-next-slot')?.addEventListener('click', () => {
-    detailsOpen = false;
-    currentIndex++;
-    renderUI();
-  });
 }
 
 function undoLastDecision() {
