@@ -91,5 +91,158 @@
   },
   "sol": { "name": "Sól", "unit_default": "szczypta", "category": "przyprawy" },
   "pieprz": { "name": "Pieprz czarny", "unit_default": "szczypta", "category": "przyprawy" },
-  "cukier": { "name": "Cukier", "unit_default": "g", "calories_per_100g": 387, "category": "inne" }
+  "cukier": { "name": "Cukier", "unit_default": "g", "calories_per_100g": 387, "category": "inne" },
+  "cynamon": { "name": "Cynamon", "unit_default": "szczypta", "category": "przyprawy" },
+  "feta": { "name": "Ser feta", "unit_default": "g", "calories_per_100g": 264, "category": "nabial" },
+  "awokado": {
+    "name": "Awokado",
+    "unit_default": "szt",
+    "calories_per_100g": 160,
+    "conversion_to_grams": 200,
+    "category": "warzywa-owoce"
+  },
+  "chleb-pszenny": {
+    "name": "Chleb pszenny",
+    "unit_default": "szt",
+    "calories_per_100g": 265,
+    "conversion_to_grams": 35,
+    "category": "pieczywo"
+  },
+  "twarog": {
+    "name": "Twaróg półtłusty",
+    "unit_default": "g",
+    "calories_per_100g": 104,
+    "category": "nabial"
+  },
+  "zelka": { "name": "Żelatyna", "unit_default": "g", "category": "inne" },
+  "maliny": {
+    "name": "Maliny",
+    "unit_default": "g",
+    "calories_per_100g": 52,
+    "category": "warzywa-owoce"
+  },
+  "herbatniki": {
+    "name": "Herbatniki maślane",
+    "unit_default": "g",
+    "calories_per_100g": 480,
+    "category": "pieczywo"
+  },
+  "maslo": {
+    "name": "Masło",
+    "unit_default": "g",
+    "calories_per_100g": 717,
+    "category": "nabial"
+  },
+  "dynia": {
+    "name": "Dynia",
+    "unit_default": "g",
+    "calories_per_100g": 26,
+    "category": "warzywa-owoce"
+  },
+  "imbir-swiezy": {
+    "name": "Imbir świeży",
+    "unit_default": "g",
+    "calories_per_100g": 80,
+    "category": "warzywa-owoce"
+  },
+  "bulion-warzywny": {
+    "name": "Bulion warzywny",
+    "unit_default": "ml",
+    "calories_per_100g": 5,
+    "category": "inne"
+  },
+  "mleczko-kokosowe": {
+    "name": "Mleczko kokosowe",
+    "unit_default": "ml",
+    "calories_per_100g": 197,
+    "category": "inne"
+  },
+  "piers-kurczaka": {
+    "name": "Pierś kurczaka",
+    "unit_default": "g",
+    "calories_per_100g": 120,
+    "category": "mieso-ryby"
+  },
+  "rukola": {
+    "name": "Rukola",
+    "unit_default": "g",
+    "calories_per_100g": 25,
+    "category": "warzywa-owoce"
+  },
+  "pomidorki-koktajlowe": {
+    "name": "Pomidorki koktajlowe",
+    "unit_default": "g",
+    "calories_per_100g": 18,
+    "category": "warzywa-owoce"
+  },
+  "parmezan": {
+    "name": "Parmezan",
+    "unit_default": "g",
+    "calories_per_100g": 431,
+    "category": "nabial"
+  },
+  "sok-cytrynowy": {
+    "name": "Sok z cytryny",
+    "unit_default": "łyżka",
+    "calories_per_100g": 22,
+    "category": "inne"
+  },
+  "ziemniaki": {
+    "name": "Ziemniaki",
+    "unit_default": "g",
+    "calories_per_100g": 77,
+    "category": "warzywa-owoce"
+  },
+  "maka-pszenna": {
+    "name": "Mąka pszenna",
+    "unit_default": "g",
+    "calories_per_100g": 364,
+    "category": "suche-produkty"
+  },
+  "olej": {
+    "name": "Olej roślinny",
+    "unit_default": "łyżka",
+    "calories_per_100g": 884,
+    "conversion_to_grams": 14,
+    "category": "inne"
+  },
+  "chleb-tostowy": {
+    "name": "Chleb tostowy",
+    "unit_default": "szt",
+    "calories_per_100g": 265,
+    "conversion_to_grams": 30,
+    "category": "pieczywo"
+  },
+  "ryz-jasminowy": {
+    "name": "Ryż jaśminowy",
+    "unit_default": "g",
+    "calories_per_100g": 360,
+    "category": "suche-produkty"
+  },
+  "marchew": {
+    "name": "Marchew",
+    "unit_default": "szt",
+    "calories_per_100g": 41,
+    "conversion_to_grams": 100,
+    "category": "warzywa-owoce"
+  },
+  "groszek-mrozony": {
+    "name": "Groszek mrożony",
+    "unit_default": "g",
+    "calories_per_100g": 80,
+    "category": "warzywa-owoce"
+  },
+  "sos-sojowy": {
+    "name": "Sos sojowy",
+    "unit_default": "łyżka",
+    "calories_per_100g": 60,
+    "category": "inne"
+  },
+  "olej-sezamowy": {
+    "name": "Olej sezamowy",
+    "unit_default": "łyżka",
+    "calories_per_100g": 884,
+    "conversion_to_grams": 14,
+    "category": "inne"
+  }
 }
