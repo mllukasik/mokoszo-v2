@@ -1,153 +1,26 @@
 ---
-import App from '../layouts/App.astro';
 import { getCollection } from 'astro:content';
+import App from '../layouts/App.astro';
 
 const allRecipes = await getCollection('recipes');
-const recipesData = allRecipes.map((entry) => ({
-  slug: entry.slug,
-  title: entry.data.title,
-  image: entry.data.image ?? null,
-  timeMinutes: entry.data.time_minutes,
-  calories: entry.data.calories,
-  slots: entry.data.slots,
-  ingredients: entry.data.ingredients,
-}));
-
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const withBase = (path: string | undefined) =>
+  path ? (path.startsWith('/') ? `${base}${path}` : path) : undefined;
+const recipesJson = JSON.stringify(
+  allRecipes.map(e => ({
+    slug: e.slug,
+    title: e.data.title,
+    image: withBase(e.data.image),
+    calories: e.data.calories,
+    slots: e.data.slots,
+  }))
+);
 ---
 
 <App title="Plan dnia — Jutro jem" currentNav="plan">
-  <div class="p-4 max-w-2xl mx-auto">
-    <p class="text-[12.5px] font-bold text-ink-2 mb-1">Plan dnia</p>
-    <h1 class="text-2xl font-ui font-bold text-ink mb-1" data-testid="plan-heading">
-      Plan dnia
-    </h1>
-    <p class="text-ink-2 mb-4">
-      Dzień: <strong data-testid="plan-date">…</strong>
-    </p>
-
-    <div
-      data-testid="date-warning"
-      hidden
-      class="bg-biel border-l-4 border-kurkuma rounded-r-m p-4 text-[14px] text-ink mb-4"
-    ></div>
-
-    <p data-testid="plan-calories" hidden class="text-ink font-semibold mb-4"></p>
-
-    <div id="plan-slots" class="space-y-3">
-      <section id="slot-sniadanie" class="bg-biel rounded-m p-4 shadow-cien-1">
-        <h2 class="font-bold text-ink">Śniadanie</h2>
-        <div data-slot-dishes="sniadanie" class="space-y-1"></div>
-        <a data-testid="pick-sniadanie" href={`${base}/wybieram`} class="inline-flex items-center min-h-touch text-emalia-500 font-semibold">
-          Wybierz przepis
-        </a>
-      </section>
-      <section id="slot-obiad" class="bg-biel rounded-m p-4 shadow-cien-1">
-        <h2 class="font-bold text-ink">Obiad</h2>
-        <div data-slot-dishes="obiad" class="space-y-1"></div>
-        <a data-testid="pick-obiad" href={`${base}/wybieram`} class="inline-flex items-center min-h-touch text-emalia-500 font-semibold">
-          Wybierz przepis
-        </a>
-      </section>
-      <section id="slot-kolacja" class="bg-biel rounded-m p-4 shadow-cien-1">
-        <h2 class="font-bold text-ink">Kolacja</h2>
-        <div data-slot-dishes="kolacja" class="space-y-1"></div>
-        <a data-testid="pick-kolacja" href={`${base}/wybieram`} class="inline-flex items-center min-h-touch text-emalia-500 font-semibold">
-          Wybierz przepis
-        </a>
-      </section>
-    </div>
-
-    <a
-      data-testid="goto-shopping"
-      href={`${base}/zakupy`}
-      class="mt-6 inline-flex items-center justify-center min-h-touch px-6 py-3 rounded-l bg-emalia-900 text-na-emalii font-semibold"
-    >
-      Zrób listę zakupów
-    </a>
-  </div>
-
-  <script id="recipes-data" type="application/json" set:html={JSON.stringify(recipesData)} />
-
-  <script>
-    import { getDateParam, buildWybieramUrl, buildZakupyUrl, scrollToSlotFromHash, getRecipesData } from '../scripts/router.ts';
-
-    const date = getDateParam();
-    document.querySelectorAll('[data-testid="plan-date"]').forEach((el) => {
-      el.textContent = date;
-    });
-
-    const picks: Array<[string, string]> = [
-      ['pick-sniadanie', 'sniadanie'],
-      ['pick-obiad', 'obiad'],
-      ['pick-kolacja', 'kolacja'],
-    ];
-    for (const [testId, slot] of picks) {
-      const link = document.querySelector(`[data-testid="${testId}"]`);
-      if (link instanceof HTMLAnchorElement) {
-        link.href = buildWybieramUrl(date, slot);
-      }
-    }
-
-    const shopping = document.querySelector('[data-testid="goto-shopping"]');
-    if (shopping instanceof HTMLAnchorElement) {
-      shopping.href = buildZakupyUrl(date);
-    }
-
-    // ——— Podsumowanie planu z localStorage (zalążek E-03) ———
-    interface StoredDish { recipeSlug: string; addedAt: number }
-    interface StoredSlot { id: string; name: string; label: string; dishes: StoredDish[] }
-    interface StoredPlan { date: string; slots: StoredSlot[] }
-
-    function readPlan(): StoredPlan | null {
-      try {
-        const raw = localStorage.getItem('jutrojem:plan');
-        if (!raw) return null;
-        const plan = JSON.parse(raw) as StoredPlan;
-        return plan && Array.isArray(plan.slots) ? plan : null;
-      } catch { return null; }
-    }
-
-    const stored = readPlan();
-    const recipes = getRecipesData();
-    const caloriesBySlug = new Map(recipes.map((r) => [r.slug, r.calories]));
-    const titleBySlug = new Map(recipes.map((r) => [r.slug, r.title]));
-
-    // Q-10: ostrzeżenie, gdy istnieje niepusty plan na inną datę.
-    const warning = document.querySelector('[data-testid="date-warning"]');
-    if (stored && stored.date !== date && stored.slots.some((s) => s.dishes.length > 0)) {
-      const count = stored.slots.reduce((n, s) => n + s.dishes.length, 0);
-      if (warning instanceof HTMLElement) {
-        warning.hidden = false;
-        warning.textContent =
-          `Masz już zaplanowane dania — liczba posiłków w planie z ${stored.date}: ${count}. ` +
-          `Zmiana daty nie kasuje poprzedniego planu.`;
-      }
-    }
-
-    // Plan na bieżącą datę: kalorie + wypisane dania.
-    if (stored && stored.date === date) {
-      const dishes = stored.slots.flatMap((s) => s.dishes);
-      if (dishes.length > 0) {
-        const total = dishes.reduce((sum, d) => sum + (caloriesBySlug.get(d.recipeSlug) ?? 0), 0);
-        const kcalEl = document.querySelector('[data-testid="plan-calories"]');
-        if (kcalEl instanceof HTMLElement) {
-          kcalEl.hidden = false;
-          kcalEl.textContent = `Suma dnia: ${total} kcal`;
-        }
-        for (const slot of stored.slots) {
-          const box = document.querySelector(`[data-slot-dishes="${slot.name}"]`);
-          if (!box) continue;
-          for (const dish of slot.dishes) {
-            const p = document.createElement('p');
-            p.className = 'text-[14px] text-ink font-medium';
-            p.textContent = titleBySlug.get(dish.recipeSlug) ?? dish.recipeSlug;
-            box.appendChild(p);
-          }
-        }
-      }
-    }
-
-    scrollToSlotFromHash();
-  </script>
+  <script id="all-recipes" type="application/json" set:html={recipesJson} />
+  <script id="base-url" type="application/json" set:html={JSON.stringify(base)} />
+  <div id="plan-mount" class="min-h-[calc(100dvh-var(--nav-height))]"></div>
 </App>
+
+<script src="../components/PlanDay.ts"></script>
