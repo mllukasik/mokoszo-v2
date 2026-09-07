@@ -2,13 +2,21 @@
 // Dynamiczne daty przekazywane są przez URLSearchParams (?date=YYYY-MM-DD),
 // podświetlenie slotu po powrocie z E-04 — przez hash (#slot-<id>).
 
+export interface RecipeIngredient {
+  slug: string;
+  name: string;
+  amount: number;
+  unit: string;
+}
+
 export interface RecipeSummary {
   slug: string;
   title: string;
-  image?: string;
+  image?: string | null;
   timeMinutes: number;
   calories: number;
   slots: string[];
+  ingredients: RecipeIngredient[];
 }
 
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

@@ -10,6 +10,7 @@ const recipesData = allRecipes.map((entry) => ({
   timeMinutes: entry.data.time_minutes,
   calories: entry.data.calories,
   slots: entry.data.slots,
+  ingredients: entry.data.ingredients,
 }));
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
