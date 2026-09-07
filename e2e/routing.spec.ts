@@ -114,8 +114,9 @@ test.describe('Routing i nawigacja (krok 0.4)', () => {
 
   test('zakupy czytają ?date= i linkują do planu', async ({ page, baseURL }) => {
     await goto(page, baseURL, '/zakupy?date=2026-09-05');
-    await expect(page.getByTestId('shopping-date')).toHaveText('2026-09-05');
-    await expect(page.getByTestId('back-to-plan')).toHaveAttribute(
+    // E-06 (krok 2.2): data dnia po polsku — w nagłówku listy albo w stanie braku planu
+    await expect(page.getByText(/września/)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Idź do planu' })).toHaveAttribute(
       'href',
       /plan\?date=2026-09-05/,
     );
