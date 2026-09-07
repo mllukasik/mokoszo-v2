@@ -1,6 +1,6 @@
 ---
 title: Zapiekanka z soczewicą i pieczarkami
-image: /images/zapiekanka-z-soczewica.jpg
+image: "https://images.unsplash.com/photo-1664339031004-9cfdf88b8017?w=800&q=80&fit=crop&auto=format"
 time_minutes: 45
 calories: 520
 servings: 2
