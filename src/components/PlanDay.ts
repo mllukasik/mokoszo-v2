@@ -268,13 +268,6 @@ function renderSlot(slot: PlanSlot): string {
         <ul class="space-y-2 mb-2">
           ${slot.dishes.map(dish => renderDish(dish.recipeSlug, slot.id)).join('')}
         </ul>
-        <!-- Dodaj kolejne danie -->
-        <a
-          href="${base}/wybieram?date=${currentDate}&slot=${slot.id}"
-          class="text-[13px] text-emalia-500 font-semibold flex items-center gap-1 min-h-touch py-1"
-        >
-          + Dodaj kolejne danie
-        </a>
       ` : `
         <!-- Pusty slot — wyróżniony -->
         <a

@@ -506,28 +506,40 @@ function showConfirmation(message: string) {
   confirmationVisible = true;
   deciding = false;
 
+  const base = getBaseUrl();
   const nextSlot = getNextSlot();
   const nextSlotLabel = nextSlot ? SLOT_LABELS[nextSlot.name] : null;
   const nextSlotUrl = nextSlot
-    ? `${getBaseUrl()}/wybieram/?date=${currentDate}&slot=${nextSlot.id}`
+    ? `${base}/wybieram/?date=${currentDate}&slot=${nextSlot.id}`
     : null;
+  const planUrl = `${base}/plan?date=${currentDate}#slot-${currentSlotId}`;
+
+  if (!nextSlotUrl) {
+    // Brak kolejnego slotu — pokaż ✓ i po chwili przejdź do planu
+    mount.innerHTML = `
+      <div class="flex flex-col items-center justify-center min-h-dvh px-6 text-center gap-6">
+        <div class="text-4xl">✓</div>
+        <p class="text-na-emalii text-lg font-bold" aria-live="assertive">${message}</p>
+        <p class="text-na-emalii-2 text-[13px]">Wracam do planu…</p>
+      </div>
+    `;
+    setTimeout(() => { window.location.href = planUrl; }, 1500);
+    return;
+  }
 
   mount.innerHTML = `
     <div class="flex flex-col items-center justify-center min-h-dvh px-6 text-center gap-6">
       <div class="text-4xl">✓</div>
       <p class="text-na-emalii text-lg font-bold" aria-live="assertive">${message}</p>
       <div class="flex flex-col gap-3 w-full max-w-[280px]">
-        ${nextSlotUrl
-          ? `<a
-              href="${nextSlotUrl}"
-              class="px-5 py-3 rounded-l bg-kurkuma text-kurkuma-tekst font-bold min-h-touch flex items-center justify-center"
-            >
-              Zaplanuj ${nextSlotLabel?.toLowerCase() ?? 'kolejny posiłek'}
-            </a>`
-          : ''
-        }
         <a
-          href="${getBaseUrl()}/plan?date=${currentDate}#slot-${currentSlotId}"
+          href="${nextSlotUrl}"
+          class="px-5 py-3 rounded-l bg-kurkuma text-kurkuma-tekst font-bold min-h-touch flex items-center justify-center"
+        >
+          Zaplanuj ${nextSlotLabel?.toLowerCase() ?? 'kolejny posiłek'}
+        </a>
+        <a
+          href="${planUrl}"
           class="px-5 py-3 rounded-l border border-white/30 text-na-emalii font-semibold min-h-touch flex items-center justify-center"
         >
           Wróć do planu
