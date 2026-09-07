@@ -523,7 +523,7 @@ function showConfirmation(message: string) {
         <p class="text-na-emalii-2 text-[13px]">Wracam do planu…</p>
       </div>
     `;
-    setTimeout(() => { window.location.href = planUrl; }, 1500);
+    setTimeout(() => { window.location.href = planUrl; }, 600);
     return;
   }
 
