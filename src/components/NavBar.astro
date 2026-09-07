@@ -1,0 +1,41 @@
+---
+export interface Props {
+  current?: 'przepisy' | 'plan' | 'zakupy' | 'wiecej';
+}
+const { current = 'przepisy' } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+
+const navItems = [
+  { id: 'przepisy', label: 'Przepisy', href: `${base}/`, icon: 'book' },
+  { id: 'plan',     label: 'Plan',     href: `${base}/plan`, icon: 'calendar' },
+  { id: 'zakupy',   label: 'Zakupy',   href: `${base}/zakupy`, icon: 'cart' },
+  { id: 'wiecej',   label: 'Więcej',   href: `${base}/ustawienia`, icon: 'settings' },
+];
+---
+<nav
+  class="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-biel border-t border-kreska"
+  style="height: var(--nav-height);"
+  aria-label="Nawigacja główna"
+>
+  {navItems.map((item) => (
+    <a
+      href={item.href}
+      class={[
+        'flex flex-col items-center justify-center gap-0.5 flex-1 min-h-touch text-xs font-ui font-medium transition-colors',
+        item.id === current
+          ? 'text-emalia-500'
+          : 'text-ink-2 hover:text-ink'
+      ].join(' ')}
+      aria-current={item.id === current ? 'page' : undefined}
+    >
+      <span class="text-xl leading-none" aria-hidden="true">
+        {item.icon === 'book' && '📖'}
+        {item.icon === 'calendar' && '📅'}
+        {item.icon === 'cart' && '🛒'}
+        {item.icon === 'settings' && '⚙️'}
+      </span>
+      <span>{item.label}</span>
+    </a>
+  ))}
+</nav>

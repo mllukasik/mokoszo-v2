@@ -1,0 +1,41 @@
+:root {
+  /* ——— baza ——— */
+  --porcelana: #EEF1EA;
+  --biel: #FFFFFF;
+  --kreska: #D6DCD4;
+  --kreska-mocna: #C2CCC0;
+
+  /* ——— atrament ——— */
+  --ink: #0E2430;
+  --ink-2: #4A6270;
+  --ink-3: #5E7480;
+
+  /* ——— emalia ——— */
+  --emalia-900: #0E2430;
+  --emalia-800: #11303F;
+  --emalia-700: #14384A;
+  --emalia-500: #1F5C74;
+  --na-emalii: #EEF1EA;
+  --na-emalii-2: #A8BBC4;
+
+  /* ——— kurkuma ——— */
+  --kurkuma: #E5A11F;
+  --kurkuma-tekst: #7A5000;
+  --kurkuma-tint: #FBEBC8;
+
+  /* ——— decyzje ——— */
+  --tak: #2A6E45;
+  --tak-jasny: #6FCB95;
+  --tak-tint: #DDEEE2;
+  --nie: #9C3453;
+  --nie-jasny: #E2809B;
+  --nie-tint: #F6DEE5;
+
+  /* ——— cienie ——— */
+  --cien-1: 0 1px 2px rgba(14,36,48,.10);
+  --cien-2: 0 6px 20px -8px rgba(14,36,48,.28);
+  --cien-noc: 0 18px 44px -14px rgba(0,0,0,.6);
+
+  /* ——— layout ——— */
+  --nav-height: 56px;
+}
