@@ -44,6 +44,21 @@ test.describe('E-04: Tryb wybierania', () => {
     await expect(card.getByText('Składniki')).not.toBeVisible();
   });
 
+  test('przycisk X zamyka szczegóły', async ({ page }) => {
+    const card = page.locator('#card-current');
+    await card.waitFor();
+    await expect(card.getByText('Składniki')).not.toBeVisible();
+    // Otwórz Enterem
+    await page.focus('#card-current');
+    await page.keyboard.press('Enter');
+    await expect(card.getByText('Składniki')).toBeVisible();
+    // Debug: check if X button exists and is clickable
+    const xBtn = card.locator('[data-close-details]');
+    await expect(xBtn).toBeVisible();
+    await xBtn.click();
+    await expect(card.getByText('Składniki')).not.toBeVisible();
+  });
+
   test('przycisk "Nie dziś" odrzuca kartę i pokazuje następną', async ({ page }) => {
     const firstTitle = await page.locator('article[aria-label]').first().getAttribute('aria-label');
     await page.getByRole('button', { name: 'Nie dziś' }).click();

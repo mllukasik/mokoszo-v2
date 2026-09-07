@@ -473,21 +473,9 @@ function toggleDetails() {
   if (!card) return;
   const panel = card.querySelector('[data-details-panel]') as HTMLElement | null;
   const metaOverlay = card.querySelector('.absolute.bottom-0.left-0.right-0.p-4') as HTMLElement | null;
-  if (panel) {
-    panel.hidden = !detailsOpen;
-  }
-  if (metaOverlay) {
-    metaOverlay.hidden = detailsOpen;
-  }
+  if (panel) panel.hidden = !detailsOpen;
+  if (metaOverlay) metaOverlay.hidden = detailsOpen;
   card.setAttribute('aria-expanded', String(detailsOpen));
-}
-
-function openDetails() {
-  if (!detailsOpen) toggleDetails();
-}
-
-function closeDetails() {
-  if (detailsOpen) toggleDetails();
 }
 
 // ——— Gesty (swipe) — FR-03 ———
@@ -679,9 +667,12 @@ function attachEvents() {
   document.getElementById('btn-remove-filter-empty')?.addEventListener('click', removeFilter);
   document.getElementById('btn-restart')?.addEventListener('click', restart);
 
-// Zamknięcie szczegółów
-  document.querySelector('[data-close-details]')?.addEventListener('click', () => {
-    toggleDetails();
+  // Zamknięcie szczegółów - delegacja na karcie (zawsze istnieje)
+  document.getElementById('card-current')?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('[data-close-details]')) {
+      e.stopPropagation();
+      toggleDetails();
+    }
   });
 
   // Gesty
