@@ -6,7 +6,11 @@ import Base from '../layouts/Base.astro';
 const allRecipes = await getCollection('recipes');
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const withBase = (path: string | undefined) =>
-  path ? (base ? `${base}${path}` : path) : undefined;
+  path
+    ? (path.startsWith('http://') || path.startsWith('https://') || !base)
+      ? path
+      : `${base}${path}`
+    : undefined;
 
 // Fragmenty treści Markdown: opis (pierwszy akapit przed nagłówkami) i kroki "Przygotowanie"
 function extractBody(body: string) {
