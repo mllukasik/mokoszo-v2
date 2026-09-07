@@ -1,5 +1,6 @@
 ---
 title: Owsianka z jabłkiem i cynamonem
+image: "https://images.unsplash.com/photo-1710444224000-273d950eb27b?w=800&q=80&fit=crop&auto=format"
 time_minutes: 10
 calories: 340
 servings: 1

@@ -1,5 +1,6 @@
 ---
 title: Sałatka z kurczakiem i rukolą
+image: "https://images.unsplash.com/photo-1688923130928-8468d6af8d7e?w=800&q=80&fit=crop&auto=format"
 time_minutes: 20
 calories: 380
 servings: 2

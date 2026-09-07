@@ -1,5 +1,6 @@
 ---
 title: Krem z dyni z imbirem
+image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80&fit=crop&auto=format"
 time_minutes: 35
 calories: 180
 servings: 4

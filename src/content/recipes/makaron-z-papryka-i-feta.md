@@ -1,5 +1,6 @@
 ---
 title: Makaron z papryką i fetą
+image: "https://images.unsplash.com/photo-1605888969139-42cca4308aa2?w=800&q=80&fit=crop&auto=format"
 time_minutes: 25
 calories: 610
 servings: 2

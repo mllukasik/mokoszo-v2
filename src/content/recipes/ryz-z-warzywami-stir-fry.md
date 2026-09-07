@@ -1,5 +1,6 @@
 ---
 title: Ryż stir-fry z warzywami i jajkiem
+image: "https://images.unsplash.com/photo-1595908129746-57ca1a63dd4d?w=800&q=80&fit=crop&auto=format"
 time_minutes: 20
 calories: 480
 servings: 2

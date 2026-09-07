@@ -1,5 +1,6 @@
 ---
 title: Placki ziemniaczane ze śmietaną
+image: "https://images.unsplash.com/photo-1607095597425-6f61dee8ab7e?w=800&q=80&fit=crop&auto=format"
 time_minutes: 30
 calories: 450
 servings: 3

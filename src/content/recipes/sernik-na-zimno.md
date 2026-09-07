@@ -1,5 +1,6 @@
 ---
 title: Sernik na zimno z malinami
+image: "https://images.unsplash.com/photo-1702925614886-50ad13c88d3f?w=800&q=80&fit=crop&auto=format"
 time_minutes: 20
 calories: 340
 servings: 6

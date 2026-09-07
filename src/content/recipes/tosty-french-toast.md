@@ -1,5 +1,6 @@
 ---
 title: French toast z cynamonem
+image: "https://images.unsplash.com/photo-1595044643502-616eeebbdff3?w=800&q=80&fit=crop&auto=format"
 time_minutes: 15
 calories: 390
 servings: 2

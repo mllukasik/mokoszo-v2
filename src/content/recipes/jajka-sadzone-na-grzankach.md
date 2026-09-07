@@ -1,5 +1,6 @@
 ---
 title: Jajka sadzone na grzankach z awokado
+image: "https://images.unsplash.com/photo-1504382262782-5b4ece78642b?w=800&q=80&fit=crop&auto=format"
 time_minutes: 15
 calories: 420
 servings: 1
