@@ -193,7 +193,7 @@ function renderCardStack(): string {
 function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): string {
   const isNext = role === 'next';
   const baseClasses = `
-    absolute inset-0 rounded-karta overflow-hidden bg-emalia-800
+    absolute inset-0 rounded-karta overflow-hidden bg-emalia-800 flex flex-col
     ${isNext ? 'scale-[0.95] opacity-60 pointer-events-none' : 'cursor-grab active:cursor-grabbing shadow-cien-noc'}
   `;
 
@@ -208,8 +208,8 @@ function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): st
       ${role === 'current' ? 'role="article"' : ''}
       aria-label="${recipe.title}"
     >
-      <!-- Zdjęcie 4:5 -->
-      <div class="relative" style="aspect-ratio: 4/5; min-height: 240px;">
+      <!-- Zdjęcie: 52% wysokości karty (wg E-04), elastyczne na każdym viewporcie -->
+      <div class="relative flex-none" style="height: 52%; min-height: 180px;">
         ${image}
         <!-- Gradient czytelności -->
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none"></div>
@@ -232,8 +232,8 @@ function renderCardElement(recipe: RecipeCardData, role: 'current' | 'next'): st
           <span class="text-4xl font-black text-nie-tint rotate-[20deg]">Nie dziś</span>
         </div>
       </div>
-      <!-- Treść przewijana (FR-02) -->
-      <div class="overflow-y-auto max-h-[200px] p-4 font-prose text-[15px] text-na-emalii leading-relaxed">
+      <!-- Treść przewijana (FR-02) — wypełnia resztę karty -->
+      <div class="flex-1 overflow-y-auto p-4 font-prose text-[15px] text-na-emalii leading-relaxed min-h-0">
         ${recipe.description ? `<p class="mb-4">${recipe.description}</p>` : ''}
         <h3 class="font-ui font-bold text-[13px] uppercase tracking-wide text-na-emalii-2 mb-2">Składniki</h3>
         <ul class="space-y-1 mb-4">

@@ -18,6 +18,13 @@ test.describe('E-04: Tryb wybierania', () => {
     await expect(page.locator('article[aria-label]').first()).toBeVisible();
   });
 
+  test('karta pokazuje opis i składniki (również wąskie viewport)', async ({ page }) => {
+    const card = page.locator('#card-current');
+    await card.waitFor();
+    await expect(card.getByText('Składniki')).toBeVisible();
+    await expect(card.locator('p, h3').first()).toBeVisible();
+  });
+
   test('przycisk "Nie dziś" odrzuca kartę i pokazuje następną', async ({ page }) => {
     const firstTitle = await page.locator('article[aria-label]').first().getAttribute('aria-label');
     await page.getByRole('button', { name: 'Nie dziś' }).click();
