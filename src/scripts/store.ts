@@ -64,6 +64,20 @@ export function addDishToSlot(plan: DayPlan, slotId: string, recipeSlug: string)
   return updated;
 }
 
+/** Zastępuje wszystkie dania w slocie jednym nowym (domyślny tryb: jedno danie = jeden slot). */
+export function setDishInSlot(plan: DayPlan, slotId: string, recipeSlug: string): DayPlan {
+  const updated = {
+    ...plan,
+    slots: plan.slots.map(s =>
+      s.id === slotId
+        ? { ...s, dishes: [{ recipeSlug, addedAt: Date.now() }] }
+        : s
+    ),
+  };
+  savePlan(updated);
+  return updated;
+}
+
 export function removeDishFromSlot(plan: DayPlan, slotId: string, recipeSlug: string): DayPlan {
   const updated = {
     ...plan,

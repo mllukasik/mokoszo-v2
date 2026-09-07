@@ -1,5 +1,5 @@
 import type { SlotTag } from '../types';
-import { loadPlan, addDishToSlot, createEmptyPlan, loadSettings, savePlan } from '../scripts/store';
+import { loadPlan, addDishToSlot, setDishInSlot, createEmptyPlan, loadSettings, savePlan } from '../scripts/store';
 import { SLOT_LABELS } from '../types';
 
 interface RecipeCardData {
@@ -29,6 +29,7 @@ let currentDate = '';
 let currentSlotId = '';
 let history: string[] = []; // do cofania decyzji (FR-05)
 let confirmationVisible = false;
+let deciding = false; // blokada re-entrantu: zapobiega podwójnemu wywołaniu decide()
 let keyboardAttached = false;
 let keyboardHintDismissed = false;
 let detailsOpen = false; // szczegóły przepisu otwarte (tap na karcie)
@@ -115,8 +116,10 @@ function renderUI() {
   if (!mount) return;
   confirmationVisible = false;
 
+  deciding = false;
+
   mount.innerHTML = `
-    <div class="relative flex flex-col min-h-dvh text-na-emalii" role="main">
+    <div class="relative flex flex-col min-h-dvh text-na-emalii" role="main" style="overflow-x:clip">
       ${renderTopBar()}
       ${renderFilterBar()}
       ${renderSlotInfo()}
@@ -376,9 +379,10 @@ function renderKeyboardHint(): string {
 // ——— Akcje ———
 
 function decide(accepted: boolean) {
-  if (confirmationVisible) return;
+  if (confirmationVisible || deciding) return;
+  deciding = true;
   const recipe = filteredRecipes[currentIndex];
-  if (!recipe) return;
+  if (!recipe) { deciding = false; return; }
 
   if (accepted) {
     acceptRecipe(recipe);
@@ -386,7 +390,7 @@ function decide(accepted: boolean) {
     detailsOpen = false;
     history.push(recipe.slug);
     currentIndex++;
-    renderUI();
+    renderUI(); // renderUI resetuje deciding = false
   }
 }
 
@@ -394,35 +398,104 @@ function acceptRecipe(recipe: RecipeCardData) {
   if (!currentSlotId || !currentDate) {
     // Bez kontekstu — pytaj o slot
     alert(`Przepis "${recipe.title}" gotowy do dodania. Wróć do planu i wybierz slot.`);
+    deciding = false;
     return;
   }
 
   let plan = loadPlan(currentDate);
   const settings = loadSettings();
-
   if (!plan) {
     plan = createEmptyPlan(currentDate, settings.defaultSlots);
   }
 
-  const updatedPlan = addDishToSlot(plan, currentSlotId, recipe.slug);
-  savePlan(updatedPlan);
-
-  const slot = updatedPlan.slots.find((s) => s.id === currentSlotId);
-  const dishCount = slot?.dishes.length ?? 1;
+  const slot = plan.slots.find((s) => s.id === currentSlotId);
   const slotLabel = slot ? SLOT_LABELS[slot.name] : 'posiłku';
 
-  const confirmation =
-    dishCount === 1
-      ? `${recipe.title} — ${slotLabel.toLowerCase()} zaplanowany`
-      : `${recipe.title} — dodany jako danie ${dishCount}. ${slotLabel.toLowerCase()}u`;
+  // Jeśli slot ma już danie → zapytaj o zastąpienie
+  if (slot && slot.dishes.length > 0) {
+    const existingSlug = slot.dishes[0].recipeSlug;
+    const existingTitle = allRecipes.find((r) => r.slug === existingSlug)?.title ?? existingSlug;
+    showReplacementDialog(recipe, existingTitle, slotLabel, plan);
+    return; // deciding pozostaje true — dialog go zresetuje po cancel
+  }
 
+  // Slot pusty — dodaj normalnie
+  const updatedPlan = addDishToSlot(plan, currentSlotId, recipe.slug);
+  const confirmation = `${recipe.title} — ${slotLabel.toLowerCase()} zaplanowany`;
   showConfirmation(confirmation);
+}
+
+function showReplacementDialog(
+  newRecipe: RecipeCardData,
+  existingTitle: string,
+  slotLabel: string,
+  plan: ReturnType<typeof loadPlan>,
+) {
+  if (!plan) return;
+  const mount = document.getElementById('cards-mount');
+  if (!mount) return;
+
+  // Usuń ewentualny poprzedni dialog
+  document.getElementById('replace-dialog')?.remove();
+
+  const dialog = document.createElement('div');
+  dialog.id = 'replace-dialog';
+  dialog.innerHTML = `
+    <div
+      id="replace-backdrop"
+      class="fixed inset-0 bg-black/60 z-40 flex items-end justify-center"
+      style="touch-action:none"
+    >
+      <div class="bg-emalia-800 rounded-t-2xl p-6 w-full max-w-md pb-8">
+        <p class="text-na-emalii font-bold text-[17px] mb-1">
+          Wybierasz danie na ${slotLabel.toLowerCase()}
+        </p>
+        <p class="text-na-emalii-2 text-[13px] mb-5 leading-snug">
+          Masz już: <span class="text-na-emalii font-semibold">${existingTitle}</span>.<br>
+          Zastąpić daniem <span class="text-na-emalii font-semibold">${newRecipe.title}</span>?
+        </p>
+        <div class="flex gap-3">
+          <button
+            id="btn-replace-cancel"
+            class="flex-1 py-3 rounded-l border border-white/30 text-na-emalii font-semibold min-h-touch"
+          >
+            Anuluj
+          </button>
+          <button
+            id="btn-replace-confirm"
+            class="flex-1 py-3 rounded-l bg-kurkuma text-kurkuma-tekst font-bold min-h-touch"
+          >
+            Zastąp
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  mount.appendChild(dialog);
+
+  const dismiss = () => {
+    dialog.remove();
+    deciding = false; // odblokuj — user może wybrać ponownie
+  };
+
+  document.getElementById('btn-replace-cancel')?.addEventListener('click', dismiss);
+  document.getElementById('replace-backdrop')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) dismiss();
+  });
+  document.getElementById('btn-replace-confirm')?.addEventListener('click', () => {
+    dialog.remove();
+    const updatedPlan = setDishInSlot(plan!, currentSlotId, newRecipe.slug);
+    const confirmation = `${newRecipe.title} — ${slotLabel.toLowerCase()} zaplanowany`;
+    showConfirmation(confirmation);
+  });
 }
 
 function showConfirmation(message: string) {
   const mount = document.getElementById('cards-mount');
   if (!mount) return;
   confirmationVisible = true;
+  deciding = false;
 
   mount.innerHTML = `
     <div class="flex flex-col items-center justify-center min-h-dvh px-6 text-center gap-6">
@@ -584,6 +657,11 @@ function updateCardTransform(dx: number) {
 }
 
 function animateDecision(card: HTMLElement, accepted: boolean) {
+  if (confirmationVisible || deciding) {
+    // Zignoruj swipe gdy decyzja już w toku
+    resetCardTransform(card);
+    return;
+  }
   const targetX = accepted ? window.innerWidth : -window.innerWidth;
   card.style.transition = 'transform 250ms ease-out';
   card.style.transform = `translateX(${targetX}px) rotate(${accepted ? 15 : -15}deg)`;
