@@ -2,8 +2,58 @@
 import App from '../layouts/App.astro';
 ---
 <App title="Przepisy — Jutro jem" currentNav="przepisy">
-  <div class="p-4">
-    <h1 class="text-2xl font-ui font-bold text-ink mb-4">Przepisy</h1>
-    <p class="text-ink-2">Wkrótce: katalog przepisów z filtrami.</p>
+  <header class="bg-emalia-900 text-na-emalii px-4 py-8 md:px-8 md:py-12">
+    <p class="text-kurkuma text-[12.5px] font-bold mb-4">Jutro jem</p>
+    <h1 class="text-[clamp(26px,6vw,42px)] font-extrabold tracking-tight leading-[1.05] mb-2 max-w-[20ch]">
+      Co dzisiaj gotujesz?
+    </h1>
+    <p class="text-na-emalii-2 text-[clamp(14px,2vw,16px)] max-w-[60ch]">
+      Wybieraj przepisy kartami i planuj posiłki na cały tydzień.
+    </p>
+  </header>
+
+  <div class="p-4 space-y-6">
+    <section>
+      <h2 class="text-xl font-bold text-ink mb-3">Przepisy</h2>
+      <p class="text-sm font-medium text-ink-2">Wkrótce: katalog przepisów z filtrami.</p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-ink mb-3">Przykładowe filtry</h2>
+      <div class="flex flex-wrap gap-2">
+        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                       text-[13px] font-semibold border border-kreska bg-biel text-ink
+                       min-h-touch cursor-pointer">
+          Śniadanie
+        </button>
+        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                       text-[13px] font-semibold bg-emalia-900 text-na-emalii
+                       min-h-touch cursor-pointer">
+          Obiad
+          <span aria-hidden="true">✕</span>
+          <span class="sr-only">zdejmij filtr obiad</span>
+        </button>
+        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                       text-[13px] font-semibold border border-kreska bg-biel text-ink
+                       min-h-touch cursor-pointer">
+          Kolacja
+        </button>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-ink mb-3">Komunikaty</h2>
+      <div class="space-y-3">
+        <div class="bg-biel border-l-4 border-kurkuma rounded-r-m p-4 text-[14px]">
+          <strong>Wskazówka:</strong> Wybierz przepisy, które chcesz ugotować.
+        </div>
+        <div class="bg-biel border-l-4 border-tak rounded-r-m p-4 text-[14px]">
+          Plan na dziś gotowy!
+        </div>
+        <div class="bg-biel border-l-4 border-nie rounded-r-m p-4 text-[14px]">
+          Nie masz jeszcze żadnych przepisów w planie.
+        </div>
+      </div>
+    </section>
   </div>
 </App>
