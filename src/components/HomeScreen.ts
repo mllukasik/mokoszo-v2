@@ -274,7 +274,7 @@ function renderFilters(): string {
           <button
             type="button"
             data-slot-filter="${slot}"
-            class="slot-filter-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold border min-h-[36px] transition-colors
+            class="slot-filter-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold border min-h-touch transition-colors
               ${
                 activeSlotFilters.has(slot)
                   ? 'bg-emalia-900 text-na-emalii border-emalia-900'
@@ -300,7 +300,7 @@ function renderFilters(): string {
             <button
               type="button"
               data-time-filter="${opt.value}"
-              class="time-filter-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold border min-h-[36px] transition-colors
+              class="time-filter-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold border min-h-touch transition-colors
                 ${
                   activeTimeFilter === opt.value
                     ? 'bg-emalia-900 text-na-emalii border-emalia-900'
@@ -317,7 +317,7 @@ function renderFilters(): string {
             activeTimeFilter !== null
               ? `
             <button type="button" data-time-filter="null"
-              class="time-filter-btn text-[13px] text-ink-2 px-2 min-h-[36px]">
+              class="time-filter-btn text-[13px] text-ink-2 px-2 min-h-touch">
               ✕ czas
             </button>
           `
