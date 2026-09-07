@@ -14,7 +14,7 @@ const recipesJson = JSON.stringify(
 import ingredientsData from '../data/ingredients.json';
 const ingredientsJson = JSON.stringify(ingredientsData);
 
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <App title="Lista zakupów — Jutro jem" currentNav="zakupy">
