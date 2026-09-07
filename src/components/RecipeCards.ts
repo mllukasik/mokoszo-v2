@@ -482,6 +482,14 @@ function toggleDetails() {
   card.setAttribute('aria-expanded', String(detailsOpen));
 }
 
+function openDetails() {
+  if (!detailsOpen) toggleDetails();
+}
+
+function closeDetails() {
+  if (detailsOpen) toggleDetails();
+}
+
 // ——— Gesty (swipe) — FR-03 ———
 // touch-action: pan-y na karcie = przewijanie pionowe natywne.
 // Decyzja tylko gdy ruch poziomy > 1.3x pionowy i > 7px.
@@ -676,12 +684,16 @@ function attachEvents() {
     toggleDetails();
   });
 
-  // Tap na karcie = otwórz/zamknij szczegóły (fallback dla click)
+  // Tap/kliknięcie na karcie = otwórz/zamknij szczegóły
+  // Używamy capture phase, by łapać kliknięcia w zdjęciu/tagach przed swipe handlerami
   document.getElementById('card-current')?.addEventListener('click', (e) => {
+    if (confirmationVisible) return;
     // Ignoruj kliknięcia w przycisk zamknięcia (ma własny handler)
     if ((e.target as HTMLElement).closest('[data-close-details]')) return;
-    if (!confirmationVisible) toggleDetails();
-  });
+    // Kliknięcie w dowolnym miejscu karty (zdjęcie, tagi, tytuł, meta) otwiera/zamyka
+    if (!detailsOpen) openDetails();
+    else toggleDetails();
+  }, true); // capture phase
 
   // Gesty
   attachSwipeEvents();
